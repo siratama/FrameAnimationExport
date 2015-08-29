@@ -25,6 +25,7 @@ class LayerData
 
 		//When space exists in file name(layer name), when outputting, replaced by hyphen.
 		fileName = ~/ /g.replace(layer.name, "-");
+		if(bounds.isNull()) fileName = ""; //image empty
 
 		path = (directoryPath.length == 0) ?
 			fileName :

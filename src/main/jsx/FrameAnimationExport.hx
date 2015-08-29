@@ -130,7 +130,10 @@ class FrameAnimationExport
 		psd.Lib.preferences.rulerUnits = Units.PIXELS;
 		for (key in imagePathMap.keys())
 		{
-			var imageOutput = new ImageOutput(application, outputDirectoryPath, outputAssetsDirectoryPath, imagePathMap[key]);
+			var layerData:LayerData = imagePathMap[key];
+			if(layerData.bounds.isNull()) continue; //ignored image empty layer
+
+			var imageOutput = new ImageOutput(application, outputDirectoryPath, outputAssetsDirectoryPath, layerData);
 			imageOutput.execute();
 		}
 		activeDocument.selection.deselect();

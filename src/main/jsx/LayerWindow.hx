@@ -26,8 +26,6 @@ class LayerWindow
 			var layer:Layer = layers[i];
 			if(!layer.visible) continue;
 
-			//js.Lib.alert(layer.name);
-
 			if(layer.typename == LayerTypeName.LAYER_SET)
 			{
 				var layerSet = cast(layer, LayerSet);
@@ -39,10 +37,10 @@ class LayerWindow
 
 				visibleLayerDataSet = visibleLayerDataSet.concat(directory.visibleLayerDataSet);
 			}
-			else{
-				visibleLayerDataSet.push(
-					new LayerData(layer, parentDirectoryPath)
-				);
+			else
+			{
+				var layerData = new LayerData(layer, parentDirectoryPath);
+				visibleLayerDataSet.push(layerData);
 			}
 		}
 	}

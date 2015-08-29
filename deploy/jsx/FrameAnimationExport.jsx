@@ -1502,7 +1502,9 @@ PixelOutline.prototype = {
 		var $it0 = this.imagePathMap.keys();
 		while( $it0.hasNext() ) {
 			var key = $it0.next();
-			var imageOutput = new jsx.ImageOutput(this.application,this.outputDirectoryPath,this.outputAssetsDirectoryPath,this.imagePathMap.get(key));
+			var layerData = this.imagePathMap.get(key);
+			if(layerData.bounds.isNull()) continue;
+			var imageOutput = new jsx.ImageOutput(this.application,this.outputDirectoryPath,this.outputAssetsDirectoryPath,layerData);
 			imageOutput.execute();
 		}
 		this.activeDocument.selection.deselect();
@@ -1595,6 +1597,7 @@ jsx.LayerData = $hxClasses["jsx.LayerData"] = function(layer,directoryPath) {
 	this.bounds = jsx.util.Bounds.convert(layer.bounds);
 	this.opacity = layer.opacity;
 	this.fileName = new EReg(" ","g").replace(layer.name,"-");
+	if(this.bounds.isNull()) this.fileName = "";
 	if(directoryPath.length == 0) this.path = this.fileName; else this.path = [directoryPath.join("/"),this.fileName].join("/");
 };
 jsx.LayerData.__name__ = ["jsx","LayerData"];
@@ -1630,7 +1633,10 @@ jsx.LayerWindow.prototype = {
 				var directory = new jsx.LayerWindow(layerSet.layers,directoryPath);
 				directory.parse();
 				this.visibleLayerDataSet = this.visibleLayerDataSet.concat(directory.visibleLayerDataSet);
-			} else this.visibleLayerDataSet.push(new jsx.LayerData(layer,this.parentDirectoryPath));
+			} else {
+				var layerData = new jsx.LayerData(layer,this.parentDirectoryPath);
+				this.visibleLayerDataSet.push(layerData);
+			}
 		}
 	}
 	,getLayerTypeDefSet: function() {
@@ -1724,6 +1730,9 @@ jsx.util.Bounds.convert = function(bounds) {
 jsx.util.Bounds.prototype = {
 	toString: function() {
 		return [this.left,this.top,this.right,this.bottom].join(":");
+	}
+	,isNull: function() {
+		return this.left == 0 && this.right == 0 && this.top == 0 && this.bottom == 0;
 	}
 	,get_width: function() {
 		return this.right - this.left;
