@@ -6,4 +6,5 @@ class FileDirectory
 	public static inline var OUTPUT_ARRAY_FILE_NAME = "array.json";
 	public static inline var OUTPUT_ASSETS_FOLDER_NAME = "assets";
 	public static inline var PATH_COLUMN = "/";
+	public static inline var IMAGE_EXTENSION = ".png";
 }

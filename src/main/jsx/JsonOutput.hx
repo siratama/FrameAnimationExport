@@ -7,24 +7,16 @@ class JsonOutput
 {
 	private var normalJson:String;
 	private var arrayJson:String;
-	public var outputDirectoryPath(default, null):String;
+	private var outputDirectoryPath:String;
 
-	public function new(normalJson:String, arrayJson:String)
+	public function new(outputDirectoryPath:String, normalJson:String, arrayJson:String)
 	{
+		this.outputDirectoryPath = outputDirectoryPath;
 		this.normalJson = normalJson;
 		this.arrayJson = arrayJson;
 	}
 	public function execute():Bool
 	{
-		var selectedFolder = Folder.selectDialog();
-		if(selectedFolder == null){
-			return false;
-		}
-		//can't write?: selectedFolder.path
-		outputDirectoryPath = selectedFolder.relativeURI + FileDirectory.PATH_COLUMN + FileDirectory.OUTPUT_FOLDER_NAME;
-		var folder = new Folder(outputDirectoryPath);
-		if(!folder.create()) return false;
-
 		var result = write(normalJson, FileDirectory.OUTPUT_NORMAL_FILE_NAME);
 		if(!result) return false;
 

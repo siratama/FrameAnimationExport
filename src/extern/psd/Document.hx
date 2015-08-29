@@ -1,5 +1,6 @@
 package psd;
 
+import adobe.File;
 @:native("Document")
 extern class Document
 {
@@ -12,4 +13,6 @@ extern class Document
 	public var height(default, null):Float;
 	public function add(width:Float, height:Float):Void;
 	public function paste(introSelection:Bool = false):ArtLayer;
+	public function exportDocument(exportIn:File, exportAs:ExportType = null, options:ExportOptions = null):Void;
+	public function close(saving:SaveOptions = null):Void;
 }

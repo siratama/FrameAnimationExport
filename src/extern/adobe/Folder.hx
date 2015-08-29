@@ -7,6 +7,7 @@ extern class Folder
 	public var name(default, null):String;
 	public var path(default, null):String;
 	public var relativeURI(default, null):String;
+	public var exists(default, null):Bool;
 	public static function selectDialog(?prompt:String, ?select:String):Folder;
 	public function create():Bool;
 }

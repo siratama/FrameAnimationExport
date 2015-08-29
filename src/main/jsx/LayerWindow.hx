@@ -10,10 +10,10 @@ import psd.LayerTypeName;
 class LayerWindow
 {
 	private var layers:Layers;
-	private var parentDirectoryPath:String;
+	private var parentDirectoryPath:Array<String>;
 	public var visibleLayerDataSet(default, null):Array<LayerData>;
 
-	public function new(layers:Layers, parentDirectoryPath:String = "")
+	public function new(layers:Layers, parentDirectoryPath:Array<String>)
 	{
 		this.layers = layers;
 		this.parentDirectoryPath = parentDirectoryPath;
@@ -31,7 +31,10 @@ class LayerWindow
 			if(layer.typename == LayerTypeName.LAYER_SET)
 			{
 				var layerSet = cast(layer, LayerSet);
-				var directory = new LayerWindow(layerSet.layers, parentDirectoryPath + layer.name + FileDirectory.PATH_COLUMN);
+
+				var directoryPath = parentDirectoryPath.copy();
+				directoryPath.push(layer.name);
+				var directory = new LayerWindow(layerSet.layers, directoryPath);
 				directory.parse();
 
 				visibleLayerDataSet = visibleLayerDataSet.concat(directory.visibleLayerDataSet);

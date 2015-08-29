@@ -9,6 +9,8 @@ class OutputDataToJsonConverter
 	private static inline var ARRAY_END = "]";
 	private static inline var CLUMN = ",";
 	private static inline var CR = "\n";
+	private static inline var TAB = "\t";
+	private static inline var TAB2 = TAB + TAB;
 
 	public static function toNormal(layerTypeDefSets:Array<Array<LayerTypeDef>>):String
 	{
@@ -25,7 +27,7 @@ class OutputDataToJsonConverter
 		{
 			var layerTypeDefSet = layerTypeDefSets[i];
 
-			var setLines = ARRAY_START + CR;
+			var setLines = TAB + ARRAY_START + CR;
 			for (j in 0...layerTypeDefSet.length)
 			{
 				var layerTypeDef = layerTypeDefSet[j];
@@ -37,7 +39,7 @@ class OutputDataToJsonConverter
 				lines += CR;
 				setLines += lines;
 			}
-			setLines += ARRAY_END;
+			setLines += TAB + ARRAY_END;
 			if(i < layerTypeDefSets.length - 1){
 				setLines += CLUMN;
 			}

@@ -1,5 +1,6 @@
 package jsx;
 
+import lib.FileDirectory;
 import lib.LayerTypeDef;
 import psd.Layer;
 import jsx.util.Bounds;
@@ -7,28 +8,42 @@ using jsx.util.Bounds;
 
 class LayerData
 {
-	private var bounds:Bounds;
+	public var bounds(default, null):Bounds;
 	private var opacity:Float;
 	public var layer(default, null):Layer;
 	public var path(default, null):String;
+	public var directoryPath:Array<String>;
+	private var fileName:String;
 
-	public function new(layer:Layer, directoryPath:String)
+	public function new(layer:Layer, directoryPath:Array<String>)
 	{
 		this.layer = layer;
-		bounds = layer.bounds.convert();
-		//layer.opacity;
-		path = directoryPath + layer.name;
+		this.directoryPath = directoryPath;
 
-		//js.Lib.alert(bounds); //ok
+		bounds = layer.bounds.convert();
+		opacity = layer.opacity;
+
+		//When space exists in file name(layer name), when outputting, replaced by hyphen.
+		fileName = ~/ /g.replace(layer.name, "-");
+
+		path = (directoryPath.length == 0) ?
+			fileName :
+			[directoryPath.join(FileDirectory.PATH_COLUMN), fileName].join(FileDirectory.PATH_COLUMN);
 	}
 	public function getLayerTypeDef():LayerTypeDef
 	{
 		var layerTypeDef = {
-			path: path,
+			name: fileName,
+			directoryPath: getDirectoryPathString(),
 			x:bounds.left,
 			y:bounds.top,
 			opacity:opacity
 		};
 		return layerTypeDef;
+	}
+
+	public function getDirectoryPathString():String
+	{
+		return directoryPath.join(FileDirectory.PATH_COLUMN);
 	}
 }

@@ -10,6 +10,8 @@ class Bounds
 	public var top(default, null):Float;
 	public var right(default, null):Float;
 	public var bottom(default, null):Float;
+	public var width(get, null):Float;
+	public var height(get, null):Float;
 
 	public function new(left:Float, top:Float, right:Float, bottom:Float)
 	{
@@ -25,5 +27,11 @@ class Bounds
 	public static function convert(bounds:Array<UnitValue>):Bounds
 	{
 		return new Bounds(bounds[0].value, bounds[1].value, bounds[2].value, bounds[3].value);
+	}
+	private function get_width():Float{
+		return right - left;
+	}
+	private function get_height():Float{
+		return bottom - top;
 	}
 }

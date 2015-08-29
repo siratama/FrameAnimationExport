@@ -1,5 +1,6 @@
 package jsx;
 
+import jsx.OutputDirectory.OutputDirectoryEvent;
 import jsx.JsonOutput;
 import psd.Units;
 import js.Lib;
@@ -23,6 +24,8 @@ class FrameAnimationExport
 	private var layerWindowSet:Array<LayerWindow>;
 	private var imagePathMap:Map<String, LayerData>;
 	private var jsonOutput:JsonOutput;
+	private var outputDirectoryPath:String;
+	private var outputAssetsDirectoryPath:String;
 
 	public static function main()
 	{
@@ -50,6 +53,16 @@ class FrameAnimationExport
 	{
 		activeDocument = application.activeDocument;
 
+		switch(OutputDirectory.execute())
+		{
+			case OutputDirectoryEvent.ERROR(error):
+				js.Lib.alert(error);
+				return;
+			case OutputDirectoryEvent.SUCCESS(outputDirectoryPath, outputAssetsDirectoryPath):
+				this.outputDirectoryPath = outputDirectoryPath;
+				this.outputAssetsDirectoryPath = outputAssetsDirectoryPath;
+		}
+
 		parseAllFrameLayerWindow();
 		createJson();
 		createImagePathMap();
@@ -72,7 +85,7 @@ class FrameAnimationExport
 		{
 			try{
 				PrivateAPI.selectTimelineAnimationFrame(timelineAnimationFrameIndex);
-				var layerWindow = new LayerWindow(activeDocument.layers);
+				var layerWindow = new LayerWindow(activeDocument.layers, []);
 				layerWindow.parse();
 				layerWindowSet.push(layerWindow);
 
@@ -92,6 +105,7 @@ class FrameAnimationExport
 			);
 		}
 		jsonOutput = new JsonOutput(
+			outputDirectoryPath,
 			OutputDataToJsonConverter.toNormal(layerTypeDefSets),
 			OutputDataToJsonConverter.toArray(layerTypeDefSets)
 		);
@@ -111,11 +125,15 @@ class FrameAnimationExport
 	}
 	private function outputImage()
 	{
+		PrivateAPI.selectTimelineAnimationFrame(PrivateAPI.TIMELINE_ANIMATION_FRAME_FIRST_INDEX);
+
 		psd.Lib.preferences.rulerUnits = Units.PIXELS;
 		for (key in imagePathMap.keys())
 		{
-			var imageOutput = new ImageOutput(key, imagePathMap[key]);
+			var imageOutput = new ImageOutput(application, outputDirectoryPath, outputAssetsDirectoryPath, imagePathMap[key]);
+			imageOutput.execute();
 		}
+		activeDocument.selection.deselect();
 	}
 }
 private class FrameAnimationExportJSXRunner
