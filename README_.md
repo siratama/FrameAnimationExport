@@ -1,4 +1,4 @@
-# PixelOutline
+# FrameAnimationExport
 
 PixelOutline is a extension panel for Photoshop CC. An outline of hornless 1px can be drawn by 1 click.
 
