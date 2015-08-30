@@ -1497,13 +1497,11 @@ PixelOutline.prototype = {
 		}
 	}
 	,outputImage: function() {
-		jsx.util.PrivateAPI.selectTimelineAnimationFrame(1);
 		psd.Lib.preferences.rulerUnits = Units.PIXELS;
 		var $it0 = this.imagePathMap.keys();
 		while( $it0.hasNext() ) {
 			var key = $it0.next();
 			var layerData = this.imagePathMap.get(key);
-			if(layerData.bounds.isNull()) continue;
 			var imageOutput = new jsx.ImageOutput(this.application,this.outputDirectoryPath,this.outputAssetsDirectoryPath,layerData);
 			imageOutput.execute();
 		}
@@ -1597,7 +1595,6 @@ jsx.LayerData = $hxClasses["jsx.LayerData"] = function(layer,directoryPath) {
 	this.bounds = jsx.util.Bounds.convert(layer.bounds);
 	this.opacity = layer.opacity;
 	this.fileName = new EReg(" ","g").replace(layer.name,"-");
-	if(this.bounds.isNull()) this.fileName = "";
 	if(directoryPath.length == 0) this.path = this.fileName; else this.path = [directoryPath.join("/"),this.fileName].join("/");
 };
 jsx.LayerData.__name__ = ["jsx","LayerData"];
@@ -1635,7 +1632,7 @@ jsx.LayerWindow.prototype = {
 				this.visibleLayerDataSet = this.visibleLayerDataSet.concat(directory.visibleLayerDataSet);
 			} else {
 				var layerData = new jsx.LayerData(layer,this.parentDirectoryPath);
-				this.visibleLayerDataSet.push(layerData);
+				if(!layerData.bounds.isNull()) this.visibleLayerDataSet.push(layerData);
 			}
 		}
 	}

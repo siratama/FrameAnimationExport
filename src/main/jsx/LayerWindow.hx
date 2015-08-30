@@ -40,7 +40,10 @@ class LayerWindow
 			else
 			{
 				var layerData = new LayerData(layer, parentDirectoryPath);
-				visibleLayerDataSet.push(layerData);
+
+				//ignored empty image layer
+				if(!layerData.bounds.isNull())
+					visibleLayerDataSet.push(layerData);
 			}
 		}
 	}

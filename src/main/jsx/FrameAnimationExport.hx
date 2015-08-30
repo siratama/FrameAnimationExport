@@ -125,14 +125,13 @@ class FrameAnimationExport
 	}
 	private function outputImage()
 	{
-		PrivateAPI.selectTimelineAnimationFrame(PrivateAPI.TIMELINE_ANIMATION_FRAME_FIRST_INDEX);
+		//worning: layer of checked Propagate Frame1
+		//PrivateAPI.selectTimelineAnimationFrame(PrivateAPI.TIMELINE_ANIMATION_FRAME_FIRST_INDEX);
 
 		psd.Lib.preferences.rulerUnits = Units.PIXELS;
 		for (key in imagePathMap.keys())
 		{
 			var layerData:LayerData = imagePathMap[key];
-			if(layerData.bounds.isNull()) continue; //ignored image empty layer
-
 			var imageOutput = new ImageOutput(application, outputDirectoryPath, outputAssetsDirectoryPath, layerData);
 			imageOutput.execute();
 		}
