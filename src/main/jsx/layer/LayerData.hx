@@ -1,7 +1,7 @@
-package jsx;
+package jsx.layer;
 
 import lib.FileDirectory;
-import lib.LayerTypeDef;
+import lib.PhotoshopLayer;
 import psd.Layer;
 import jsx.util.Bounds;
 using jsx.util.Bounds;
@@ -13,7 +13,7 @@ class LayerData
 	public var layer(default, null):Layer;
 	public var path(default, null):String;
 	public var directoryPath:Array<String>;
-	private var fileName:String;
+	public var fileName(default, null):String;
 
 	public function new(layer:Layer, directoryPath:Array<String>)
 	{
@@ -30,7 +30,7 @@ class LayerData
 			fileName :
 			[directoryPath.join(FileDirectory.PATH_COLUMN), fileName].join(FileDirectory.PATH_COLUMN);
 	}
-	public function getLayerTypeDef():LayerTypeDef
+	public function convertToPhotoshopLayer():PhotoshopLayer
 	{
 		var layerTypeDef = {
 			name: fileName,
@@ -41,7 +41,6 @@ class LayerData
 		};
 		return layerTypeDef;
 	}
-
 	public function getDirectoryPathString():String
 	{
 		return directoryPath.join(FileDirectory.PATH_COLUMN);

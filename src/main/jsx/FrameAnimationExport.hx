@@ -1,7 +1,13 @@
 package jsx;
+import jsx.json_convertion.assets.AssetsStructureToJsonConverter;
+import jsx.layer.LayerData;
+import jsx.layer.LayerStructure;
+import jsx.output.DirectoryCreation;
 
-import jsx.OutputDirectory.OutputDirectoryEvent;
-import jsx.JsonOutput;
+import jsx.json_convertion.layer.LayerStructueToJsonConverter;
+import jsx.output.ImageExport;
+import jsx.output.DirectoryCreation.DirectoryCreationEvent;
+import jsx.output.JsonExport;
 import psd.Units;
 import js.Lib;
 import jsx.util.PrivateAPI;
@@ -21,11 +27,9 @@ class FrameAnimationExport
 	private var application:Application;
 	private var activeDocument:Document;
 	private static inline var BORDER_PIXEL_SIZE = 1;
-	private var layerWindowSet:Array<LayerWindow>;
+	private var layerStructureSet:Array<LayerStructure>;
 	private var imagePathMap:Map<String, LayerData>;
-	private var jsonOutput:JsonOutput;
-	private var outputDirectoryPath:String;
-	private var outputAssetsDirectoryPath:String;
+	private var outputJson:JsonExport;
 
 	public static function main()
 	{
@@ -53,41 +57,36 @@ class FrameAnimationExport
 	{
 		activeDocument = application.activeDocument;
 
-		switch(OutputDirectory.execute())
+		switch(DirectoryCreation.execute())
 		{
-			case OutputDirectoryEvent.ERROR(error):
+			case DirectoryCreationEvent.ERROR(error):
 				js.Lib.alert(error);
-				return;
-			case OutputDirectoryEvent.SUCCESS(outputDirectoryPath, outputAssetsDirectoryPath):
-				this.outputDirectoryPath = outputDirectoryPath;
-				this.outputAssetsDirectoryPath = outputAssetsDirectoryPath;
-		}
-
-		parseAllFrameLayerWindow();
-		createJson();
-		createImagePathMap();
-
-		var result = jsonOutput.execute();
-		if(!result){
-			js.Lib.alert("json output error");
-			return;
-		}
-
-		outputImage();
-		js.Lib.alert("finish");
+			case DirectoryCreationEvent.SUCCESS:
+				parse();
+		}		
 	}
-	private function parseAllFrameLayerWindow()
+
+	//
+	private function parse()
 	{
-		layerWindowSet = [];
+		parseAllFramelayerStructure();
+		createImagePathMap();
+		createJson();
+
+		output();
+	}
+	private function parseAllFramelayerStructure()
+	{
+		layerStructureSet = [];
 
 		var timelineAnimationFrameIndex = PrivateAPI.TIMELINE_ANIMATION_FRAME_FIRST_INDEX;
 		while(true)
 		{
 			try{
 				PrivateAPI.selectTimelineAnimationFrame(timelineAnimationFrameIndex);
-				var layerWindow = new LayerWindow(activeDocument.layers, []);
-				layerWindow.parse();
-				layerWindowSet.push(layerWindow);
+				var layerStructure = new LayerStructure(activeDocument.layers, []);
+				layerStructure.parse();
+				layerStructureSet.push(layerStructure);
 
 			}catch(e:Dynamic){
 				break;
@@ -95,27 +94,12 @@ class FrameAnimationExport
 			timelineAnimationFrameIndex++;
 		}
 	}
-	private function createJson()
-	{
-		var layerTypeDefSets = [];
-		for (layerWindow in layerWindowSet)
-		{
-			layerTypeDefSets.push(
-				layerWindow.getLayerTypeDefSet()
-			);
-		}
-		jsonOutput = new JsonOutput(
-			outputDirectoryPath,
-			OutputDataToJsonConverter.toNormal(layerTypeDefSets),
-			OutputDataToJsonConverter.toArray(layerTypeDefSets)
-		);
-	}
 	private function createImagePathMap()
 	{
 		imagePathMap = new Map();
-		for (layerWindow in layerWindowSet)
+		for (layerStructure in layerStructureSet)
 		{
-			var map = layerWindow.createImagePathMap();
+			var map = layerStructure.createImagePathMap();
 			for (key in map.keys())
 			{
 				if(!imagePathMap.exists(key))
@@ -123,17 +107,45 @@ class FrameAnimationExport
 			}
 		}
 	}
+	private function createJson()
+	{
+		var photoshopLayerSets = [];
+		for (layerStructure in layerStructureSet)
+		{
+			photoshopLayerSets.push(
+				layerStructure.getPhotoshopLayerSet()
+			);
+		}
+		outputJson = new JsonExport(
+			LayerStructueToJsonConverter.toDefault(photoshopLayerSets),
+			LayerStructueToJsonConverter.toArray(photoshopLayerSets),
+			AssetsStructureToJsonConverter.toPathSet(imagePathMap)
+		);
+	}
+
+	//
+	private function output()
+	{
+		var result = outputJson.execute();
+		if(!result){
+			js.Lib.alert("Json output error.");
+		}
+		else{
+			outputImage();
+		}
+		js.Lib.alert("finish");
+	}
 	private function outputImage()
 	{
-		//worning: layer of checked Propagate Frame1
+		//*** worning: layer of checked Propagate Frame1 ***
 		//PrivateAPI.selectTimelineAnimationFrame(PrivateAPI.TIMELINE_ANIMATION_FRAME_FIRST_INDEX);
 
 		psd.Lib.preferences.rulerUnits = Units.PIXELS;
 		for (key in imagePathMap.keys())
 		{
 			var layerData:LayerData = imagePathMap[key];
-			var imageOutput = new ImageOutput(application, outputDirectoryPath, outputAssetsDirectoryPath, layerData);
-			imageOutput.execute();
+			var outputImage = new ImageExport(application, layerData);
+			outputImage.execute();
 		}
 		activeDocument.selection.deselect();
 	}

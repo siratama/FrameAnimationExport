@@ -1,5 +1,6 @@
-package jsx;
+package jsx.output;
 import adobe.Folder;
+import jsx.layer.LayerData;
 import jsx.util.PrivateAPI;
 import psd.SaveOptions;
 import lib.FileDirectory;
@@ -11,18 +12,18 @@ import psd.DocumentFill;
 import psd.Application;
 import psd.Document;
 import psd.Layer;
-class ImageOutput
+class ImageExport
 {
 	private var layerData:LayerData;
 	private var application:Application;
+	/*
 	private var outputDirectoryPath:String;
 	private var outputAssetsDirectoryPath:String;
+	*/
 
-	public function new(application:Application, outputDirectoryPath:String, outputAssetsDirectoryPath:String, layerData:LayerData)
+	public function new(application:Application, layerData:LayerData)
 	{
 		this.application = application;
-		this.outputDirectoryPath = outputDirectoryPath;
-		this.outputAssetsDirectoryPath = outputAssetsDirectoryPath;
 		this.layerData = layerData;
 	}
 	public function execute()
@@ -38,7 +39,11 @@ class ImageOutput
 	}
 	private function createDirectory()
 	{
-		var imageDirectoryPath = '$outputAssetsDirectoryPath${FileDirectory.PATH_COLUMN}${layerData.getDirectoryPathString()}';
+		var imageDirectoryPath = [
+			OutputPath.instance.outputAssetsDirectoryPath,
+			layerData.getDirectoryPathString()
+		].join(FileDirectory.PATH_COLUMN);
+
 		var folder = new Folder(imageDirectoryPath);
 		if(!folder.exists)
 			folder.create();
@@ -61,7 +66,7 @@ class ImageOutput
 		exportOptionsSaveForWeb.format = SaveDocumentType.PNG;
 		exportOptionsSaveForWeb.PNG8 = false;
 
-		var outputPath = [outputDirectoryPath, FileDirectory.OUTPUT_ASSETS_FOLDER_NAME, layerData.path].join(FileDirectory.PATH_COLUMN);
+		var outputPath = [OutputPath.instance.outputDirectoryPath, FileDirectory.ASSETS_DIRECTORY, layerData.path].join(FileDirectory.PATH_COLUMN);
 		newDocument.exportDocument(new File(outputPath + FileDirectory.IMAGE_EXTENSION), ExportType.SAVEFORWEB, exportOptionsSaveForWeb);
 		newDocument.close(SaveOptions.DONOTSAVECHANGES);
 	}

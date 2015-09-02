@@ -1,13 +1,13 @@
-package jsx;
+package jsx.layer;
 
 import lib.FileDirectory;
-import lib.LayerTypeDef;
+import lib.PhotoshopLayer;
 import psd.LayerSet;
 import psd.Layers;
 import psd.Layer;
 import psd.LayerTypeName;
 
-class LayerWindow
+class LayerStructure
 {
 	private var layers:Layers;
 	private var parentDirectoryPath:Array<String>;
@@ -32,7 +32,7 @@ class LayerWindow
 
 				var directoryPath = parentDirectoryPath.copy();
 				directoryPath.push(layer.name);
-				var directory = new LayerWindow(layerSet.layers, directoryPath);
+				var directory = new LayerStructure(layerSet.layers, directoryPath);
 				directory.parse();
 
 				visibleLayerDataSet = visibleLayerDataSet.concat(directory.visibleLayerDataSet);
@@ -47,16 +47,16 @@ class LayerWindow
 			}
 		}
 	}
-	public function getLayerTypeDefSet():Array<LayerTypeDef>
+	public function getPhotoshopLayerSet():Array<PhotoshopLayer>
 	{
-		var layerTypeDefSet = [];
+		var photoshopLayerSet = [];
 		for (layerData in visibleLayerDataSet)
 		{
-			layerTypeDefSet.push(
-				layerData.getLayerTypeDef()
+			photoshopLayerSet.push(
+				layerData.convertToPhotoshopLayer()
 			);
 		}
-		return layerTypeDefSet;
+		return photoshopLayerSet;
 	}
 	public function createImagePathMap():Map<String, LayerData>
 	{
