@@ -9,7 +9,7 @@ using jsx.util.Bounds;
 class LayerData
 {
 	public var bounds(default, null):Bounds;
-	private var opacity:Float;
+	private var opacity:Int;
 	public var layer(default, null):Layer;
 	public var path(default, null):String;
 	public var directoryPath:Array<String>;
@@ -21,7 +21,7 @@ class LayerData
 		this.directoryPath = directoryPath;
 
 		bounds = layer.bounds.convert();
-		opacity = layer.opacity;
+		opacity = Math.round(layer.opacity);
 
 		//When space exists in file name(layer name), when outputting, replaced by hyphen.
 		fileName = ~/ /g.replace(layer.name, "-");

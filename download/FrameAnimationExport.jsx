@@ -1594,7 +1594,7 @@ jsx.LayerData = $hxClasses["jsx.LayerData"] = function(layer,directoryPath) {
 	this.layer = layer;
 	this.directoryPath = directoryPath;
 	this.bounds = jsx.util.Bounds.convert(layer.bounds);
-	this.opacity = layer.opacity;
+	this.opacity = Math.round(layer.opacity);
 	this.fileName = new EReg(" ","g").replace(layer.name,"-");
 	if(directoryPath.length == 0) this.path = this.fileName; else this.path = [directoryPath.join("/"),this.fileName].join("/");
 };

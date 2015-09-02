@@ -7,7 +7,7 @@ typedef LayerTypeDef =
 	var directoryPath:String;
 	var x:Float;
 	var y:Float;
-	var opacity:Float;
+	var opacity:Int;
 }
 
 class Converter{
