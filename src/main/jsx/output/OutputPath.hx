@@ -9,14 +9,14 @@ class OutputPath
 
 	public var outputDirectoryPath(default, null):String;
 	public var outputAssetsDirectoryPath(default, null):String;
-	public var jsonLayerDirectoryPath(default, null):String;
-	public var jsonAssetsDirectoryPath(default, null):String;
+	public var jsonLayerPath(default, null):String;
+	public var jsonDirectoryPath(default, null):String;
 
-	public function setData(outputDirectoryPath:String, outputAssetsDirectoryPath:String, jsonLayerDirectoryPath:String, jsonAssetsDirectoryPath:String)
+	public function setData(outputDirectoryPath:String, outputAssetsDirectoryPath:String, jsonLayerPath:String, jsonDirectoryPath:String)
 	{
 		this.outputDirectoryPath = outputDirectoryPath;
 		this.outputAssetsDirectoryPath = outputAssetsDirectoryPath;
-		this.jsonLayerDirectoryPath = jsonLayerDirectoryPath;
-		this.jsonAssetsDirectoryPath = jsonAssetsDirectoryPath;
+		this.jsonLayerPath = jsonLayerPath;
+		this.jsonDirectoryPath = jsonDirectoryPath;
 	}
 }

@@ -1,22 +1,26 @@
 package jsx.output;
+import jsx.parser.directory.DirectoryData;
+import lib.PhotoshopLayer;
+import jsx.parser.layer.LayerData;
+import jsx.json_convertion.directory.DirectoryStructureToJsonConverter;
+import jsx.json_convertion.layer.LayerStructueToJsonConverter;
 import lib.FileDirectory;
 import adobe.FileOpenMode;
 import adobe.File;
 class JsonExport
 {
-	private var layerStructureDefaultJson:String;
-	private var layerStructureArrayJson:String;
-	private var assetsStructureArrayJson:String;
-
+	private var imagePathMap:Map<String, LayerData>;
+	private var photoshopLayerSets:Array<Array<PhotoshopLayer>>;
+	private var directoryData:DirectoryData;
 
 	public function new(
-		layerStructureDefaultJson:String,
-		layerStructureArrayJson:String,
-	    assetsStructureArrayJson:String
+		photoshopLayerSets:Array<Array<PhotoshopLayer>>,
+		imagePathMap:Map<String, LayerData>,
+		directoryData:DirectoryData
 	){
-		this.layerStructureDefaultJson = layerStructureDefaultJson;
-		this.layerStructureArrayJson = layerStructureArrayJson;
-		this.assetsStructureArrayJson = assetsStructureArrayJson;
+		this.directoryData = directoryData;
+		this.imagePathMap = imagePathMap;
+		this.photoshopLayerSets = photoshopLayerSets;
 	}
 	public function execute():Bool
 	{
@@ -27,22 +31,36 @@ class JsonExport
 	}
 	private function executeLayer():Bool
 	{
-		var jsonOutputDirectory = OutputPath.instance.jsonLayerDirectoryPath + FileDirectory.PATH_COLUMN;
+		var jsonOutputDirectory = OutputPath.instance.jsonLayerPath + FileDirectory.PATH_COLUMN;
 
-		var result = write(layerStructureDefaultJson, jsonOutputDirectory, FileDirectory.LAYER_STRUCTURE_DEFAULT_FILE);
+		var result = write(
+			LayerStructueToJsonConverter.toDefault(photoshopLayerSets),
+			jsonOutputDirectory, FileDirectory.LAYER_STRUCTURE_DEFAULT_FILE
+		);
 		if(!result) return false;
 
-		return write(layerStructureArrayJson, jsonOutputDirectory, FileDirectory.LAYER_STRUCTURE_ARRAY_FILE);
+		return write(
+			LayerStructueToJsonConverter.toArray(photoshopLayerSets),
+			jsonOutputDirectory, FileDirectory.LAYER_STRUCTURE_ARRAY_FILE
+		);
 	}
 
 	private function executeAssets():Bool
 	{
-		var jsonOutputDirectory = OutputPath.instance.jsonAssetsDirectoryPath + FileDirectory.PATH_COLUMN;
+		var jsonOutputDirectory = OutputPath.instance.jsonDirectoryPath + FileDirectory.PATH_COLUMN;
 
-		var result = write(assetsStructureArrayJson, jsonOutputDirectory, FileDirectory.ASSETS_STRUCTURE_PATH_FILE);
+		var result = write(
+			DirectoryStructureToJsonConverter.toPathSet(imagePathMap),
+			jsonOutputDirectory,
+			FileDirectory.DIRECTORY_STRUCTURE_PATH_FILE
+		);
 		if(!result) return false;
 
-		return true;
+		return write(
+			DirectoryStructureToJsonConverter.toDirectory(directoryData),
+			jsonOutputDirectory,
+			FileDirectory.DIRECTORY_STRUCTURE_DEFAULT_FILE
+		);
 	}
 	private function write(json:String, jsonOutputDirectory:String, fileName:String):Bool
 	{

@@ -1432,22 +1432,19 @@ PixelOutline.prototype = {
 			case 0:
 				var error = _g[2];
 				js.Lib.alert(error);
-				return;
+				break;
 			case 1:
-				"";
+				this.parse();
 				break;
 			}
 		}
+	}
+	,parse: function() {
 		this.parseAllFramelayerStructure();
 		this.createImagePathMap();
-		this.createJson();
-		var result = this.outputJson.execute();
-		if(!result) {
-			js.Lib.alert("json output error");
-			return;
-		}
-		this.outputImage();
-		js.Lib.alert("finish");
+		this.createPhotoshopLayerSets();
+		this.parseDirectoryStructure();
+		this.output();
 	}
 	,parseAllFramelayerStructure: function() {
 		this.layerStructureSet = [];
@@ -1455,7 +1452,7 @@ PixelOutline.prototype = {
 		while(true) {
 			try {
 				jsx.util.PrivateAPI.selectTimelineAnimationFrame(timelineAnimationFrameIndex);
-				var layerStructure = new jsx.layer.LayerStructure(this.activeDocument.layers,[]);
+				var layerStructure = new jsx.parser.layer.LayerStructure(this.activeDocument.layers,[]);
 				layerStructure.parse();
 				this.layerStructureSet.push(layerStructure);
 			} catch( e ) {
@@ -1483,16 +1480,28 @@ PixelOutline.prototype = {
 			}
 		}
 	}
-	,createJson: function() {
-		var photoshopLayerSets = [];
+	,createPhotoshopLayerSets: function() {
+		this.photoshopLayerSets = [];
 		var _g = 0;
 		var _g1 = this.layerStructureSet;
 		while(_g < _g1.length) {
 			var layerStructure = _g1[_g];
 			++_g;
-			photoshopLayerSets.push(layerStructure.getPhotoshopLayerSet());
+			this.photoshopLayerSets.push(layerStructure.getPhotoshopLayerSet());
 		}
-		this.outputJson = new jsx.output.JsonExport(jsx.json_convertion.layer.LayerStructueToJsonConverter.toDefault(photoshopLayerSets),jsx.json_convertion.layer.LayerStructueToJsonConverter.toArray(photoshopLayerSets),jsx.json_convertion.assets.AssetsStructureToJsonConverter.toPathSet(this.imagePathMap));
+	}
+	,parseDirectoryStructure: function() {
+		this.directoryStructure = new jsx.parser.directory.DirectoryStructure();
+		this.directoryStructure.parse(this.imagePathMap);
+	}
+	,output: function() {
+		var result = this.outputJson();
+		if(!result) js.Lib.alert("Json output error."); else this.outputImage();
+		js.Lib.alert("finish");
+	}
+	,outputJson: function() {
+		var jsonExport = new jsx.output.JsonExport(this.photoshopLayerSets,this.imagePathMap,this.directoryStructure.rootDirectoryData);
+		return jsonExport.execute();
 	}
 	,outputImage: function() {
 		psd.Lib.preferences.rulerUnits = Units.PIXELS;
@@ -1527,10 +1536,10 @@ jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute = function() {
 if(!jsx.json_convertion) jsx.json_convertion = {};
 jsx.json_convertion.JsonStructure = $hxClasses["jsx.json_convertion.JsonStructure"] = function() { };
 jsx.json_convertion.JsonStructure.__name__ = ["jsx","json_convertion","JsonStructure"];
-if(!jsx.json_convertion.assets) jsx.json_convertion.assets = {};
-jsx.json_convertion.assets.AssetsStructureToJsonConverter = $hxClasses["jsx.json_convertion.assets.AssetsStructureToJsonConverter"] = function() { };
-jsx.json_convertion.assets.AssetsStructureToJsonConverter.__name__ = ["jsx","json_convertion","assets","AssetsStructureToJsonConverter"];
-jsx.json_convertion.assets.AssetsStructureToJsonConverter.toPathSet = function(imagePathMap) {
+if(!jsx.json_convertion.directory) jsx.json_convertion.directory = {};
+jsx.json_convertion.directory.DirectoryStructureToJsonConverter = $hxClasses["jsx.json_convertion.directory.DirectoryStructureToJsonConverter"] = function() { };
+jsx.json_convertion.directory.DirectoryStructureToJsonConverter.__name__ = ["jsx","json_convertion","directory","DirectoryStructureToJsonConverter"];
+jsx.json_convertion.directory.DirectoryStructureToJsonConverter.toPathSet = function(imagePathMap) {
 	var json = "[" + "\n";
 	var pathSet;
 	var _g = [];
@@ -1550,6 +1559,51 @@ jsx.json_convertion.assets.AssetsStructureToJsonConverter.toPathSet = function(i
 		json += line;
 	}
 	json += "]";
+	return json;
+};
+jsx.json_convertion.directory.DirectoryStructureToJsonConverter.toDirectory = function(directoryData) {
+	var directory = directoryData.toDirectory();
+	return jsx.json_convertion.directory.DirectoryStructureToJsonConverter.toDirectoryRoop(directory);
+};
+jsx.json_convertion.directory.DirectoryStructureToJsonConverter.toDirectoryRoop = function(directory,nest) {
+	if(nest == null) nest = 0;
+	var tab = "";
+	var _g = 0;
+	while(_g < nest) {
+		var i = _g++;
+		tab += "\t";
+	}
+	var template = new haxe.Template("::tab::{\r\n::tab::\t\"name\":\"::name::\",\r\n::tab::\t\"files\":[\r\n::files::\r\n::tab::\t],\r\n::tab::\t\"directories\":[\r\n::directories::\r\n::tab::\t]\r\n::tab::}");
+	var json = template.execute({ tab : tab, name : directory.name, files : jsx.json_convertion.directory.DirectoryStructureToJsonConverter.filesToJson(directory.files,tab), directories : jsx.json_convertion.directory.DirectoryStructureToJsonConverter.childDirectoriesToJson(directory.directories,++nest)});
+	return json;
+};
+jsx.json_convertion.directory.DirectoryStructureToJsonConverter.filesToJson = function(files,tab) {
+	var _g = 0;
+	while(_g < 2) {
+		var i = _g++;
+		tab += "\t";
+	}
+	var json = "";
+	var _g1 = 0;
+	var _g2 = files.length;
+	while(_g1 < _g2) {
+		var i1 = _g1++;
+		var file = files[i1];
+		json += "" + tab + "\"" + file + "\"";
+		if(i1 < files.length - 1) json += "," + "\n";
+	}
+	return json;
+};
+jsx.json_convertion.directory.DirectoryStructureToJsonConverter.childDirectoriesToJson = function(directories,nest) {
+	var json = "";
+	var _g1 = 0;
+	var _g = directories.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		var childDirectory = directories[i];
+		json += jsx.json_convertion.directory.DirectoryStructureToJsonConverter.toDirectoryRoop(childDirectory,nest + 1);
+		if(i < directories.length - 1) json += "," + "\n";
+	}
 	return json;
 };
 if(!jsx.json_convertion.layer) jsx.json_convertion.layer = {};
@@ -1596,81 +1650,8 @@ jsx.json_convertion.layer.LayerToJsonConverter.toArrayString = function(photosho
 	return jsx.json_convertion.layer.LayerToJsonConverter.toCommon(photoshopLayer,"\t\t[\"::name::\", \"::directory_path::\", ::x::, ::y::, ::opacity::]");
 };
 jsx.json_convertion.layer.LayerToJsonConverter.toCommon = function(photoshopLayer,templateString) {
-	var layerTypeDefStr = new haxe.Template(templateString);
-	return layerTypeDefStr.execute({ name : photoshopLayer.name, directory_path : photoshopLayer.directoryPath, x : photoshopLayer.x, y : photoshopLayer.y, opacity : photoshopLayer.opacity});
-};
-if(!jsx.layer) jsx.layer = {};
-jsx.layer.LayerData = $hxClasses["jsx.layer.LayerData"] = function(layer,directoryPath) {
-	this.layer = layer;
-	this.directoryPath = directoryPath;
-	this.bounds = jsx.util.Bounds.convert(layer.bounds);
-	this.opacity = Math.round(layer.opacity);
-	this.fileName = new EReg(" ","g").replace(layer.name,"-");
-	if(directoryPath.length == 0) this.path = this.fileName; else this.path = [directoryPath.join("/"),this.fileName].join("/");
-};
-jsx.layer.LayerData.__name__ = ["jsx","layer","LayerData"];
-jsx.layer.LayerData.prototype = {
-	convertToPhotoshopLayer: function() {
-		var layerTypeDef = { name : this.fileName, directoryPath : this.getDirectoryPathString(), x : this.bounds.left, y : this.bounds.top, opacity : this.opacity};
-		return layerTypeDef;
-	}
-	,getDirectoryPathString: function() {
-		return this.directoryPath.join("/");
-	}
-	,__class__: jsx.layer.LayerData
-};
-jsx.layer.LayerStructure = $hxClasses["jsx.layer.LayerStructure"] = function(layers,parentDirectoryPath) {
-	this.layers = layers;
-	this.parentDirectoryPath = parentDirectoryPath;
-	this.visibleLayerDataSet = [];
-};
-jsx.layer.LayerStructure.__name__ = ["jsx","layer","LayerStructure"];
-jsx.layer.LayerStructure.prototype = {
-	parse: function() {
-		var _g1 = 0;
-		var _g = this.layers.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var layer = this.layers[i];
-			if(!layer.visible) continue;
-			if(layer.typename == LayerTypeName.LAYER_SET) {
-				var layerSet;
-				layerSet = js.Boot.__cast(layer , LayerSet);
-				var directoryPath = this.parentDirectoryPath.slice();
-				directoryPath.push(layer.name);
-				var directory = new jsx.layer.LayerStructure(layerSet.layers,directoryPath);
-				directory.parse();
-				this.visibleLayerDataSet = this.visibleLayerDataSet.concat(directory.visibleLayerDataSet);
-			} else {
-				var layerData = new jsx.layer.LayerData(layer,this.parentDirectoryPath);
-				if(!layerData.bounds.isNull()) this.visibleLayerDataSet.push(layerData);
-			}
-		}
-	}
-	,getPhotoshopLayerSet: function() {
-		var photoshopLayerSet = [];
-		var _g = 0;
-		var _g1 = this.visibleLayerDataSet;
-		while(_g < _g1.length) {
-			var layerData = _g1[_g];
-			++_g;
-			photoshopLayerSet.push(layerData.convertToPhotoshopLayer());
-		}
-		return photoshopLayerSet;
-	}
-	,createImagePathMap: function() {
-		var imagePathMap = new haxe.ds.StringMap();
-		var _g = 0;
-		var _g1 = this.visibleLayerDataSet;
-		while(_g < _g1.length) {
-			var layerData = _g1[_g];
-			++_g;
-			imagePathMap.set(layerData.path,layerData);
-			layerData;
-		}
-		return imagePathMap;
-	}
-	,__class__: jsx.layer.LayerStructure
+	var template = new haxe.Template(templateString);
+	return template.execute({ name : photoshopLayer.name, directory_path : photoshopLayer.directoryPath, x : photoshopLayer.x, y : photoshopLayer.y, opacity : photoshopLayer.opacity});
 };
 if(!jsx.output) jsx.output = {};
 jsx.output.DirectoryCreationEvent = $hxClasses["jsx.output.DirectoryCreationEvent"] = { __ename__ : ["jsx","output","DirectoryCreationEvent"], __constructs__ : ["ERROR","SUCCESS"] };
@@ -1692,13 +1673,13 @@ jsx.output.DirectoryCreation.execute = function() {
 	var assetsDirectoryPath = [outputDirectoryPath,"assets"].join("/");
 	var outputAssetsFolder = new Folder(assetsDirectoryPath);
 	if(!outputAssetsFolder.create()) return jsx.output.DirectoryCreationEvent.ERROR("Output assets folder creation error.");
-	var jsonLayerDirectoryPath = [outputDirectoryPath,"json","layer"].join("/");
-	var jsonLayerFolder = new Folder(jsonLayerDirectoryPath);
+	var jsonLayerPath = [outputDirectoryPath,"json","layer"].join("/");
+	var jsonLayerFolder = new Folder(jsonLayerPath);
 	if(!jsonLayerFolder.create()) return jsx.output.DirectoryCreationEvent.ERROR("Output json layer folder creation error.");
-	var jsonAssetsDirectoryPath = [outputDirectoryPath,"json","assets"].join("/");
-	var jsonAssetsFolder = new Folder(jsonAssetsDirectoryPath);
-	if(!jsonAssetsFolder.create()) return jsx.output.DirectoryCreationEvent.ERROR("Output json assets folder creation error.");
-	(jsx.output.OutputPath.instance == null?jsx.output.OutputPath.instance = new jsx.output.OutputPath():jsx.output.OutputPath.instance).setData(outputDirectoryPath,assetsDirectoryPath,jsonLayerDirectoryPath,jsonAssetsDirectoryPath);
+	var jsonDirectoryPath = [outputDirectoryPath,"json","directory"].join("/");
+	var jsonDirectoryFolder = new Folder(jsonDirectoryPath);
+	if(!jsonDirectoryFolder.create()) return jsx.output.DirectoryCreationEvent.ERROR("Output json assets folder creation error.");
+	(jsx.output.OutputPath.instance == null?jsx.output.OutputPath.instance = new jsx.output.OutputPath():jsx.output.OutputPath.instance).setData(outputDirectoryPath,assetsDirectoryPath,jsonLayerPath,jsonDirectoryPath);
 	return jsx.output.DirectoryCreationEvent.SUCCESS;
 };
 jsx.output.ImageExport = $hxClasses["jsx.output.ImageExport"] = function(application,layerData) {
@@ -1738,10 +1719,10 @@ jsx.output.ImageExport.prototype = {
 	}
 	,__class__: jsx.output.ImageExport
 };
-jsx.output.JsonExport = $hxClasses["jsx.output.JsonExport"] = function(layerStructureDefaultJson,layerStructureArrayJson,assetsStructureArrayJson) {
-	this.layerStructureDefaultJson = layerStructureDefaultJson;
-	this.layerStructureArrayJson = layerStructureArrayJson;
-	this.assetsStructureArrayJson = assetsStructureArrayJson;
+jsx.output.JsonExport = $hxClasses["jsx.output.JsonExport"] = function(photoshopLayerSets,imagePathMap,directoryData) {
+	this.directoryData = directoryData;
+	this.imagePathMap = imagePathMap;
+	this.photoshopLayerSets = photoshopLayerSets;
 };
 jsx.output.JsonExport.__name__ = ["jsx","output","JsonExport"];
 jsx.output.JsonExport.prototype = {
@@ -1751,16 +1732,16 @@ jsx.output.JsonExport.prototype = {
 		return this.executeAssets();
 	}
 	,executeLayer: function() {
-		var jsonOutputDirectory = (jsx.output.OutputPath.instance == null?jsx.output.OutputPath.instance = new jsx.output.OutputPath():jsx.output.OutputPath.instance).jsonLayerDirectoryPath + "/";
-		var result = this.write(this.layerStructureDefaultJson,jsonOutputDirectory,"default" + ".json");
+		var jsonOutputDirectory = (jsx.output.OutputPath.instance == null?jsx.output.OutputPath.instance = new jsx.output.OutputPath():jsx.output.OutputPath.instance).jsonLayerPath + "/";
+		var result = this.write(jsx.json_convertion.layer.LayerStructueToJsonConverter.toDefault(this.photoshopLayerSets),jsonOutputDirectory,"default" + ".json");
 		if(!result) return false;
-		return this.write(this.layerStructureArrayJson,jsonOutputDirectory,"array" + ".json");
+		return this.write(jsx.json_convertion.layer.LayerStructueToJsonConverter.toArray(this.photoshopLayerSets),jsonOutputDirectory,"array" + ".json");
 	}
 	,executeAssets: function() {
-		var jsonOutputDirectory = (jsx.output.OutputPath.instance == null?jsx.output.OutputPath.instance = new jsx.output.OutputPath():jsx.output.OutputPath.instance).jsonAssetsDirectoryPath + "/";
-		var result = this.write(this.assetsStructureArrayJson,jsonOutputDirectory,"path" + ".json");
+		var jsonOutputDirectory = (jsx.output.OutputPath.instance == null?jsx.output.OutputPath.instance = new jsx.output.OutputPath():jsx.output.OutputPath.instance).jsonDirectoryPath + "/";
+		var result = this.write(jsx.json_convertion.directory.DirectoryStructureToJsonConverter.toPathSet(this.imagePathMap),jsonOutputDirectory,"path" + ".json");
 		if(!result) return false;
-		return true;
+		return this.write(jsx.json_convertion.directory.DirectoryStructureToJsonConverter.toDirectory(this.directoryData),jsonOutputDirectory,"default" + ".json");
 	}
 	,write: function(json,jsonOutputDirectory,fileName) {
 		var path = jsonOutputDirectory + fileName;
@@ -1781,13 +1762,147 @@ jsx.output.OutputPath.get_instance = function() {
 	if(jsx.output.OutputPath.instance == null) return jsx.output.OutputPath.instance = new jsx.output.OutputPath(); else return jsx.output.OutputPath.instance;
 };
 jsx.output.OutputPath.prototype = {
-	setData: function(outputDirectoryPath,outputAssetsDirectoryPath,jsonLayerDirectoryPath,jsonAssetsDirectoryPath) {
+	setData: function(outputDirectoryPath,outputAssetsDirectoryPath,jsonLayerPath,jsonDirectoryPath) {
 		this.outputDirectoryPath = outputDirectoryPath;
 		this.outputAssetsDirectoryPath = outputAssetsDirectoryPath;
-		this.jsonLayerDirectoryPath = jsonLayerDirectoryPath;
-		this.jsonAssetsDirectoryPath = jsonAssetsDirectoryPath;
+		this.jsonLayerPath = jsonLayerPath;
+		this.jsonDirectoryPath = jsonDirectoryPath;
 	}
 	,__class__: jsx.output.OutputPath
+};
+if(!jsx.parser) jsx.parser = {};
+if(!jsx.parser.directory) jsx.parser.directory = {};
+jsx.parser.directory.DirectoryData = $hxClasses["jsx.parser.directory.DirectoryData"] = function(name) {
+	if(name == null) name = "";
+	this.name = name;
+	this.files = [];
+	this.directoryDataMap = new haxe.ds.StringMap();
+};
+jsx.parser.directory.DirectoryData.__name__ = ["jsx","parser","directory","DirectoryData"];
+jsx.parser.directory.DirectoryData.prototype = {
+	addFile: function(fileName) {
+		this.files.push(fileName);
+	}
+	,getChild: function(childDirectoryName) {
+		if(!this.directoryDataMap.exists(childDirectoryName)) {
+			var v = new jsx.parser.directory.DirectoryData(childDirectoryName);
+			this.directoryDataMap.set(childDirectoryName,v);
+			v;
+		}
+		return this.directoryDataMap.get(childDirectoryName);
+	}
+	,toDirectory: function() {
+		var directories = [];
+		var $it0 = this.directoryDataMap.keys();
+		while( $it0.hasNext() ) {
+			var key = $it0.next();
+			var directoryData = this.directoryDataMap.get(key);
+			directories.push(directoryData.toDirectory());
+		}
+		return { name : this.name, files : this.files, directories : directories};
+	}
+	,__class__: jsx.parser.directory.DirectoryData
+};
+jsx.parser.directory.DirectoryStructure = $hxClasses["jsx.parser.directory.DirectoryStructure"] = function() {
+	this.rootDirectoryData = new jsx.parser.directory.DirectoryData();
+};
+jsx.parser.directory.DirectoryStructure.__name__ = ["jsx","parser","directory","DirectoryStructure"];
+jsx.parser.directory.DirectoryStructure.prototype = {
+	parse: function(imagePathMap) {
+		var $it0 = imagePathMap.keys();
+		while( $it0.hasNext() ) {
+			var key = $it0.next();
+			var directoryData = this.rootDirectoryData;
+			var layerData = imagePathMap.get(key);
+			var directoryPath = layerData.directoryPath.slice();
+			if(directoryPath.length == 0) {
+				directoryData.addFile(layerData.fileName);
+				continue;
+			}
+			var _g1 = 0;
+			var _g = directoryPath.length;
+			while(_g1 < _g) {
+				var i = _g1++;
+				var directoryName = directoryPath[i];
+				directoryData = directoryData.getChild(directoryName);
+				if(i == directoryPath.length - 1) directoryData.addFile(layerData.fileName);
+			}
+		}
+	}
+	,__class__: jsx.parser.directory.DirectoryStructure
+};
+if(!jsx.parser.layer) jsx.parser.layer = {};
+jsx.parser.layer.LayerData = $hxClasses["jsx.parser.layer.LayerData"] = function(layer,directoryPath) {
+	this.layer = layer;
+	this.directoryPath = directoryPath;
+	this.bounds = jsx.util.Bounds.convert(layer.bounds);
+	this.opacity = Math.round(layer.opacity);
+	this.fileName = new EReg(" ","g").replace(layer.name,"-");
+	if(directoryPath.length == 0) this.path = this.fileName; else this.path = [directoryPath.join("/"),this.fileName].join("/");
+};
+jsx.parser.layer.LayerData.__name__ = ["jsx","parser","layer","LayerData"];
+jsx.parser.layer.LayerData.prototype = {
+	toPhotoshopLayer: function() {
+		var photoshopLayer = { name : this.fileName, directoryPath : this.getDirectoryPathString(), x : this.bounds.left, y : this.bounds.top, opacity : this.opacity};
+		return photoshopLayer;
+	}
+	,getDirectoryPathString: function() {
+		return this.directoryPath.join("/");
+	}
+	,__class__: jsx.parser.layer.LayerData
+};
+jsx.parser.layer.LayerStructure = $hxClasses["jsx.parser.layer.LayerStructure"] = function(layers,parentDirectoryPath) {
+	this.layers = layers;
+	this.parentDirectoryPath = parentDirectoryPath;
+	this.visibleLayerDataSet = [];
+};
+jsx.parser.layer.LayerStructure.__name__ = ["jsx","parser","layer","LayerStructure"];
+jsx.parser.layer.LayerStructure.prototype = {
+	parse: function() {
+		var _g1 = 0;
+		var _g = this.layers.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var layer = this.layers[i];
+			if(!layer.visible) continue;
+			if(layer.typename == LayerTypeName.LAYER_SET) {
+				var layerSet;
+				layerSet = js.Boot.__cast(layer , LayerSet);
+				var directoryPath = this.parentDirectoryPath.slice();
+				directoryPath.push(layer.name);
+				var directory = new jsx.parser.layer.LayerStructure(layerSet.layers,directoryPath);
+				directory.parse();
+				this.visibleLayerDataSet = this.visibleLayerDataSet.concat(directory.visibleLayerDataSet);
+			} else {
+				var layerData = new jsx.parser.layer.LayerData(layer,this.parentDirectoryPath);
+				if(!layerData.bounds.isNull()) this.visibleLayerDataSet.push(layerData);
+			}
+		}
+	}
+	,getPhotoshopLayerSet: function() {
+		var photoshopLayerSet = [];
+		var _g = 0;
+		var _g1 = this.visibleLayerDataSet;
+		while(_g < _g1.length) {
+			var layerData = _g1[_g];
+			++_g;
+			photoshopLayerSet.push(layerData.toPhotoshopLayer());
+		}
+		return photoshopLayerSet;
+	}
+	,createImagePathMap: function() {
+		var imagePathMap = new haxe.ds.StringMap();
+		var _g = 0;
+		var _g1 = this.visibleLayerDataSet;
+		while(_g < _g1.length) {
+			var layerData = _g1[_g];
+			++_g;
+			imagePathMap.set(layerData.path,layerData);
+			layerData;
+		}
+		return imagePathMap;
+	}
+	,__class__: jsx.parser.layer.LayerStructure
 };
 if(!jsx.util) jsx.util = {};
 jsx.util.Bounds = $hxClasses["jsx.util.Bounds"] = function(left,top,right,bottom) {
@@ -1958,20 +2073,21 @@ haxe.Template.globals = { };
 haxe.Unserializer.DEFAULT_RESOLVER = Type;
 haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 haxe.ds.ObjectMap.count = 0;
-PixelOutline.BORDER_PIXEL_SIZE = 1;
+jsx.json_convertion.JsonStructure.CURLY_START = "{";
+jsx.json_convertion.JsonStructure.CURLY_END = "}";
 jsx.json_convertion.JsonStructure.ARRAY_START = "[";
 jsx.json_convertion.JsonStructure.ARRAY_END = "]";
 jsx.json_convertion.JsonStructure.CLUMN = ",";
 jsx.json_convertion.JsonStructure.CR = "\n";
 jsx.json_convertion.JsonStructure.TAB = "\t";
-jsx.json_convertion.JsonStructure.TAB2 = "\t" + "\t";
+jsx.json_convertion.directory.DirectoryStructureToJsonConverter.TEMPLATE_JSON = "::tab::{\r\n::tab::\t\"name\":\"::name::\",\r\n::tab::\t\"files\":[\r\n::files::\r\n::tab::\t],\r\n::tab::\t\"directories\":[\r\n::directories::\r\n::tab::\t]\r\n::tab::}";
 jsx.json_convertion.layer.LayerToJsonConverter.TEMPLATE_JSON = "\t\t{\r\n\t\t\t\"name\":\"::name::\",\r\n\t\t\t\"directory_path\":\"::directory_path::\",\r\n\t\t\t\"x\":::x::,\r\n\t\t\t\"y\":::y::,\r\n\t\t\t\"opacity\":::opacity::\r\n\t\t}";
 jsx.json_convertion.layer.LayerToJsonConverter.TEMPLATE_ARRAY_STRING = "\t\t[\"::name::\", \"::directory_path::\", ::x::, ::y::, ::opacity::]";
 jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.FOLDER_SELECTION_ERROR = "Folder selection error.";
 jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.OUTPUT_FOLDER_CREATION_ERROR = "Output folder creation error.";
 jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.OUTPUT_ASSETS_FOLDER_CREATION_ERROR = "Output assets folder creation error.";
 jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.OUTPUT_JSON_LAYER_FOLDER_CREATION_ERROR = "Output json layer folder creation error.";
-jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.OUTPUT_JSON_ASSETS_FOLDER_CREATION_ERROR = "Output json assets folder creation error.";
+jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.OUTPUT_JSON_DIRECTORY_FOLDER_CREATION_ERROR = "Output json assets folder creation error.";
 jsx.util.PrivateAPI.TIMELINE_ANIMATION_FRAME_FIRST_INDEX = 1;
 lib.FileDirectory.PATH_COLUMN = "/";
 lib.FileDirectory.IMAGE_EXTENSION = ".png";
@@ -1982,9 +2098,9 @@ lib.FileDirectory.JSON_DIRECTORY = "json";
 lib.FileDirectory.JSON_LAYER_STRUCTURE_DIRECTORY = "layer";
 lib.FileDirectory.LAYER_STRUCTURE_DEFAULT_FILE = "default" + ".json";
 lib.FileDirectory.LAYER_STRUCTURE_ARRAY_FILE = "array" + ".json";
-lib.FileDirectory.JSON_ASSETS_STRUCTURE_DIRECTORY = "assets";
-lib.FileDirectory.ASSETS_STRUCTURE_DEFAULT_FILE = "default" + ".json";
-lib.FileDirectory.ASSETS_STRUCTURE_PATH_FILE = "path" + ".json";
+lib.FileDirectory.JSON_DIRECTORY_STRUCTURE_DIRECTORY = "directory";
+lib.FileDirectory.DIRECTORY_STRUCTURE_DEFAULT_FILE = "default" + ".json";
+lib.FileDirectory.DIRECTORY_STRUCTURE_PATH_FILE = "path" + ".json";
 LayerTypeName.LAYER_SET = "LayerSet";
 psd.Lib.app = app;
 psd.Lib.preferences = preferences;

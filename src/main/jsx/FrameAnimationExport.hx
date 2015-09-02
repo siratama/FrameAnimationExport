@@ -1,7 +1,9 @@
 package jsx;
-import jsx.json_convertion.assets.AssetsStructureToJsonConverter;
-import jsx.layer.LayerData;
-import jsx.layer.LayerStructure;
+import jsx.parser.directory.DirectoryStructure;
+import lib.PhotoshopLayer;
+import jsx.json_convertion.directory.DirectoryStructureToJsonConverter;
+import jsx.parser.layer.LayerData;
+import jsx.parser.layer.LayerStructure;
 import jsx.output.DirectoryCreation;
 
 import jsx.json_convertion.layer.LayerStructueToJsonConverter;
@@ -26,10 +28,10 @@ class FrameAnimationExport
 {
 	private var application:Application;
 	private var activeDocument:Document;
-	private static inline var BORDER_PIXEL_SIZE = 1;
+	private var directoryStructure:DirectoryStructure;
 	private var layerStructureSet:Array<LayerStructure>;
 	private var imagePathMap:Map<String, LayerData>;
-	private var outputJson:JsonExport;
+	private var photoshopLayerSets:Array<Array<PhotoshopLayer>>;
 
 	public static function main()
 	{
@@ -71,7 +73,8 @@ class FrameAnimationExport
 	{
 		parseAllFramelayerStructure();
 		createImagePathMap();
-		createJson();
+		createPhotoshopLayerSets();
+		parseDirectoryStructure();
 
 		output();
 	}
@@ -107,26 +110,26 @@ class FrameAnimationExport
 			}
 		}
 	}
-	private function createJson()
+	private function createPhotoshopLayerSets()
 	{
-		var photoshopLayerSets = [];
+		photoshopLayerSets = [];
 		for (layerStructure in layerStructureSet)
 		{
 			photoshopLayerSets.push(
 				layerStructure.getPhotoshopLayerSet()
 			);
 		}
-		outputJson = new JsonExport(
-			LayerStructueToJsonConverter.toDefault(photoshopLayerSets),
-			LayerStructueToJsonConverter.toArray(photoshopLayerSets),
-			AssetsStructureToJsonConverter.toPathSet(imagePathMap)
-		);
+	}
+	private function parseDirectoryStructure()
+	{
+		directoryStructure = new DirectoryStructure();
+		directoryStructure.parse(imagePathMap);
 	}
 
 	//
 	private function output()
 	{
-		var result = outputJson.execute();
+		var result = outputJson();
 		if(!result){
 			js.Lib.alert("Json output error.");
 		}
@@ -134,6 +137,11 @@ class FrameAnimationExport
 			outputImage();
 		}
 		js.Lib.alert("finish");
+	}
+	private function outputJson():Bool
+	{
+		var jsonExport = new JsonExport(photoshopLayerSets, imagePathMap, directoryStructure.rootDirectoryData);
+		return jsonExport.execute();
 	}
 	private function outputImage()
 	{

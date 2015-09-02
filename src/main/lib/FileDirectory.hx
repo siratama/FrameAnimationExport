@@ -13,7 +13,7 @@ class FileDirectory
 	public static inline var LAYER_STRUCTURE_DEFAULT_FILE = "default" + JSON_EXTENSION;
 	public static inline var LAYER_STRUCTURE_ARRAY_FILE = "array" + JSON_EXTENSION;
 
-	public static inline var JSON_ASSETS_STRUCTURE_DIRECTORY = "assets";
-	public static inline var ASSETS_STRUCTURE_DEFAULT_FILE = "default" + JSON_EXTENSION;
-	public static inline var ASSETS_STRUCTURE_PATH_FILE = "path" + JSON_EXTENSION;
+	public static inline var JSON_DIRECTORY_STRUCTURE_DIRECTORY = "directory";
+	public static inline var DIRECTORY_STRUCTURE_DEFAULT_FILE = "default" + JSON_EXTENSION;
+	public static inline var DIRECTORY_STRUCTURE_PATH_FILE = "path" + JSON_EXTENSION;
 }

@@ -1,4 +1,4 @@
-package jsx.layer;
+package jsx.parser.layer;
 
 import lib.FileDirectory;
 import lib.PhotoshopLayer;
@@ -30,16 +30,16 @@ class LayerData
 			fileName :
 			[directoryPath.join(FileDirectory.PATH_COLUMN), fileName].join(FileDirectory.PATH_COLUMN);
 	}
-	public function convertToPhotoshopLayer():PhotoshopLayer
+	public function toPhotoshopLayer():PhotoshopLayer
 	{
-		var layerTypeDef = {
+		var photoshopLayer = {
 			name: fileName,
 			directoryPath: getDirectoryPathString(),
 			x:bounds.left,
 			y:bounds.top,
 			opacity:opacity
 		};
-		return layerTypeDef;
+		return photoshopLayer;
 	}
 	public function getDirectoryPathString():String
 	{

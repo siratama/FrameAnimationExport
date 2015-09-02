@@ -14,7 +14,7 @@ enum DirectoryCreationEvent
 	var OUTPUT_FOLDER_CREATION_ERROR = "Output folder creation error.";
 	var OUTPUT_ASSETS_FOLDER_CREATION_ERROR = "Output assets folder creation error.";
 	var OUTPUT_JSON_LAYER_FOLDER_CREATION_ERROR = "Output json layer folder creation error.";
-	var OUTPUT_JSON_ASSETS_FOLDER_CREATION_ERROR = "Output json assets folder creation error.";
+	var OUTPUT_JSON_DIRECTORY_FOLDER_CREATION_ERROR = "Output json assets folder creation error.";
 }
 
 class DirectoryCreation
@@ -39,19 +39,19 @@ class DirectoryCreation
 			return DirectoryCreationEvent.ERROR(DirectoryCreationError.OUTPUT_ASSETS_FOLDER_CREATION_ERROR);
 		}
 
-		var jsonLayerDirectoryPath = [outputDirectoryPath, FileDirectory.JSON_DIRECTORY, FileDirectory.JSON_LAYER_STRUCTURE_DIRECTORY].join(FileDirectory.PATH_COLUMN);
-		var jsonLayerFolder = new Folder(jsonLayerDirectoryPath);
+		var jsonLayerPath = [outputDirectoryPath, FileDirectory.JSON_DIRECTORY, FileDirectory.JSON_LAYER_STRUCTURE_DIRECTORY].join(FileDirectory.PATH_COLUMN);
+		var jsonLayerFolder = new Folder(jsonLayerPath);
 		if(!jsonLayerFolder.create()){
 			return DirectoryCreationEvent.ERROR(DirectoryCreationError.OUTPUT_JSON_LAYER_FOLDER_CREATION_ERROR);
 		}
 
-		var jsonAssetsDirectoryPath = [outputDirectoryPath, FileDirectory.JSON_DIRECTORY, FileDirectory.JSON_ASSETS_STRUCTURE_DIRECTORY].join(FileDirectory.PATH_COLUMN);
-		var jsonAssetsFolder = new Folder(jsonAssetsDirectoryPath);
-		if(!jsonAssetsFolder.create()){
-			return DirectoryCreationEvent.ERROR(DirectoryCreationError.OUTPUT_JSON_ASSETS_FOLDER_CREATION_ERROR);
+		var jsonDirectoryPath = [outputDirectoryPath, FileDirectory.JSON_DIRECTORY, FileDirectory.JSON_DIRECTORY_STRUCTURE_DIRECTORY].join(FileDirectory.PATH_COLUMN);
+		var jsonDirectoryFolder = new Folder(jsonDirectoryPath);
+		if(!jsonDirectoryFolder.create()){
+			return DirectoryCreationEvent.ERROR(DirectoryCreationError.OUTPUT_JSON_DIRECTORY_FOLDER_CREATION_ERROR);
 		}
 
-		OutputPath.instance.setData(outputDirectoryPath, assetsDirectoryPath, jsonLayerDirectoryPath, jsonAssetsDirectoryPath);
+		OutputPath.instance.setData(outputDirectoryPath, assetsDirectoryPath, jsonLayerPath, jsonDirectoryPath);
 		return DirectoryCreationEvent.SUCCESS;
 	}
 }

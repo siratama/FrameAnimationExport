@@ -1,6 +1,6 @@
 package jsx.output;
 import adobe.Folder;
-import jsx.layer.LayerData;
+import jsx.parser.layer.LayerData;
 import jsx.util.PrivateAPI;
 import psd.SaveOptions;
 import lib.FileDirectory;

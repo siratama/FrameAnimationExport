@@ -1,4 +1,4 @@
-package jsx.layer;
+package jsx.parser.layer;
 
 import lib.FileDirectory;
 import lib.PhotoshopLayer;
@@ -53,7 +53,7 @@ class LayerStructure
 		for (layerData in visibleLayerDataSet)
 		{
 			photoshopLayerSet.push(
-				layerData.convertToPhotoshopLayer()
+				layerData.toPhotoshopLayer()
 			);
 		}
 		return photoshopLayerSet;

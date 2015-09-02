@@ -5,7 +5,7 @@ import haxe.Template;
 class LayerToJsonConverter
 {
 	private static inline var TEMPLATE_JSON =
-	'		{
+'		{
 			"name":"::name::",
 			"directory_path":"::directory_path::",
 			"x":::x::,
@@ -23,8 +23,8 @@ class LayerToJsonConverter
 	}
 	private static function toCommon(photoshopLayer:PhotoshopLayer, templateString:String)
 	{
-		var layerTypeDefStr:Template = new Template(templateString);
-		return layerTypeDefStr.execute({
+		var template:Template = new Template(templateString);
+		return template.execute({
 			name:photoshopLayer.name,
 			directory_path:photoshopLayer.directoryPath,
 			x:photoshopLayer.x,
