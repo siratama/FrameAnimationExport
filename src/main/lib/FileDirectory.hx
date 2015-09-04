@@ -5,7 +5,7 @@ class FileDirectory
 	public static inline var IMAGE_EXTENSION = ".png";
 	public static inline var JSON_EXTENSION = ".json";
 
-	public static inline var OUTPUT_DIRECTORY = "frame_animation_exporte";
+	public static inline var OUTPUT_DIRECTORY = "frame_animation_export";
 	public static inline var ASSETS_DIRECTORY = "assets";
 	public static inline var JSON_DIRECTORY = "json";
 

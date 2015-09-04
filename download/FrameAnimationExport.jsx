@@ -1667,7 +1667,7 @@ jsx.output.DirectoryCreation.__name__ = ["jsx","output","DirectoryCreation"];
 jsx.output.DirectoryCreation.execute = function() {
 	var selectedFolder = Folder.selectDialog();
 	if(selectedFolder == null) return jsx.output.DirectoryCreationEvent.ERROR("Folder selection error.");
-	var outputDirectoryPath = [selectedFolder.relativeURI,"frame_animation_exporte"].join("/");
+	var outputDirectoryPath = [selectedFolder.relativeURI,"frame_animation_export"].join("/");
 	var outputFolder = new Folder(outputDirectoryPath);
 	if(!outputFolder.create()) return jsx.output.DirectoryCreationEvent.ERROR("Output folder creation error.");
 	var assetsDirectoryPath = [outputDirectoryPath,"assets"].join("/");
@@ -2092,7 +2092,7 @@ jsx.util.PrivateAPI.TIMELINE_ANIMATION_FRAME_FIRST_INDEX = 1;
 lib.FileDirectory.PATH_COLUMN = "/";
 lib.FileDirectory.IMAGE_EXTENSION = ".png";
 lib.FileDirectory.JSON_EXTENSION = ".json";
-lib.FileDirectory.OUTPUT_DIRECTORY = "frame_animation_exporte";
+lib.FileDirectory.OUTPUT_DIRECTORY = "frame_animation_export";
 lib.FileDirectory.ASSETS_DIRECTORY = "assets";
 lib.FileDirectory.JSON_DIRECTORY = "json";
 lib.FileDirectory.JSON_LAYER_STRUCTURE_DIRECTORY = "layer";
