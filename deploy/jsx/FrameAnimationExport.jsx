@@ -1643,14 +1643,14 @@ jsx.json_convertion.layer.LayerStructueToJsonConverter.toJson = function(photosh
 jsx.json_convertion.layer.LayerToJsonConverter = $hxClasses["jsx.json_convertion.layer.LayerToJsonConverter"] = function() { };
 jsx.json_convertion.layer.LayerToJsonConverter.__name__ = ["jsx","json_convertion","layer","LayerToJsonConverter"];
 jsx.json_convertion.layer.LayerToJsonConverter.toJson = function(photoshopLayer) {
-	return jsx.json_convertion.layer.LayerToJsonConverter.toCommon(photoshopLayer,"\t\t{\r\n\t\t\t\"name\":\"::name::\",\r\n\t\t\t\"directory_path\":\"::directory_path::\",\r\n\t\t\t\"x\":::x::,\r\n\t\t\t\"y\":::y::,\r\n\t\t\t\"opacity\":::opacity::\r\n\t\t}");
+	return jsx.json_convertion.layer.LayerToJsonConverter.toCommon(photoshopLayer,"\t\t{\r\n\t\t\t\"name\":\"::name::\",\r\n\t\t\t\"directory\":\"::directory::\",\r\n\t\t\t\"x\":::x::,\r\n\t\t\t\"y\":::y::,\r\n\t\t\t\"opacity\":::opacity::\r\n\t\t}");
 };
 jsx.json_convertion.layer.LayerToJsonConverter.toArrayString = function(photoshopLayer) {
-	return jsx.json_convertion.layer.LayerToJsonConverter.toCommon(photoshopLayer,"\t\t[\"::name::\", \"::directory_path::\", ::x::, ::y::, ::opacity::]");
+	return jsx.json_convertion.layer.LayerToJsonConverter.toCommon(photoshopLayer,"\t\t[\"::name::\", \"::directory::\", ::x::, ::y::, ::opacity::]");
 };
 jsx.json_convertion.layer.LayerToJsonConverter.toCommon = function(photoshopLayer,templateString) {
 	var template = new haxe.Template(templateString);
-	return template.execute({ name : photoshopLayer.name, directory_path : photoshopLayer.directoryPath, x : photoshopLayer.x, y : photoshopLayer.y, opacity : photoshopLayer.opacity});
+	return template.execute({ name : photoshopLayer.name, directory : photoshopLayer.directory, x : photoshopLayer.x, y : photoshopLayer.y, opacity : photoshopLayer.opacity});
 };
 if(!jsx.output) jsx.output = {};
 jsx.output.DirectoryCreationEvent = $hxClasses["jsx.output.DirectoryCreationEvent"] = { __ename__ : ["jsx","output","DirectoryCreationEvent"], __constructs__ : ["ERROR","SUCCESS"] };
@@ -1842,7 +1842,7 @@ jsx.parser.layer.LayerData = $hxClasses["jsx.parser.layer.LayerData"] = function
 jsx.parser.layer.LayerData.__name__ = ["jsx","parser","layer","LayerData"];
 jsx.parser.layer.LayerData.prototype = {
 	toPhotoshopLayer: function() {
-		var photoshopLayer = { name : this.fileName, directoryPath : this.getDirectoryPathString(), x : this.bounds.left, y : this.bounds.top, opacity : this.opacity};
+		var photoshopLayer = { name : this.fileName, directory : this.getDirectoryPathString(), x : this.bounds.left, y : this.bounds.top, opacity : this.opacity};
 		return photoshopLayer;
 	}
 	,getDirectoryPathString: function() {
@@ -2080,8 +2080,8 @@ jsx.json_convertion.JsonStructure.CLUMN = ",";
 jsx.json_convertion.JsonStructure.CR = "\n";
 jsx.json_convertion.JsonStructure.TAB = "\t";
 jsx.json_convertion.directory.DirectoryStructureToJsonConverter.TEMPLATE_JSON = "::tab::{\r\n::tab::\t\"name\":\"::name::\",\r\n::tab::\t\"files\":[\r\n::files::\r\n::tab::\t],\r\n::tab::\t\"directories\":[\r\n::directories::\r\n::tab::\t]\r\n::tab::}";
-jsx.json_convertion.layer.LayerToJsonConverter.TEMPLATE_JSON = "\t\t{\r\n\t\t\t\"name\":\"::name::\",\r\n\t\t\t\"directory_path\":\"::directory_path::\",\r\n\t\t\t\"x\":::x::,\r\n\t\t\t\"y\":::y::,\r\n\t\t\t\"opacity\":::opacity::\r\n\t\t}";
-jsx.json_convertion.layer.LayerToJsonConverter.TEMPLATE_ARRAY_STRING = "\t\t[\"::name::\", \"::directory_path::\", ::x::, ::y::, ::opacity::]";
+jsx.json_convertion.layer.LayerToJsonConverter.TEMPLATE_JSON = "\t\t{\r\n\t\t\t\"name\":\"::name::\",\r\n\t\t\t\"directory\":\"::directory::\",\r\n\t\t\t\"x\":::x::,\r\n\t\t\t\"y\":::y::,\r\n\t\t\t\"opacity\":::opacity::\r\n\t\t}";
+jsx.json_convertion.layer.LayerToJsonConverter.TEMPLATE_ARRAY_STRING = "\t\t[\"::name::\", \"::directory::\", ::x::, ::y::, ::opacity::]";
 jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.FOLDER_SELECTION_ERROR = "Folder selection error.";
 jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.OUTPUT_FOLDER_CREATION_ERROR = "Output folder creation error.";
 jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.OUTPUT_ASSETS_FOLDER_CREATION_ERROR = "Output assets folder creation error.";

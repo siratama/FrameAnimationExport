@@ -34,7 +34,7 @@ class LayerData
 	{
 		var photoshopLayer = {
 			name: fileName,
-			directoryPath: getDirectoryPathString(),
+			directory: getDirectoryPathString(),
 			x:bounds.left,
 			y:bounds.top,
 			opacity:opacity

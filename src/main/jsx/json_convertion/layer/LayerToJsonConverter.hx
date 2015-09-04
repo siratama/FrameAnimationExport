@@ -7,13 +7,13 @@ class LayerToJsonConverter
 	private static inline var TEMPLATE_JSON =
 '		{
 			"name":"::name::",
-			"directory_path":"::directory_path::",
+			"directory":"::directory::",
 			"x":::x::,
 			"y":::y::,
 			"opacity":::opacity::
 		}';
 
-	private static inline var TEMPLATE_ARRAY_STRING = '		["::name::", "::directory_path::", ::x::, ::y::, ::opacity::]';
+	private static inline var TEMPLATE_ARRAY_STRING = '		["::name::", "::directory::", ::x::, ::y::, ::opacity::]';
 
 	public static function toJson(photoshopLayer:PhotoshopLayer):String{
 		return toCommon(photoshopLayer, TEMPLATE_JSON);
@@ -26,7 +26,7 @@ class LayerToJsonConverter
 		var template:Template = new Template(templateString);
 		return template.execute({
 			name:photoshopLayer.name,
-			directory_path:photoshopLayer.directoryPath,
+			directory:photoshopLayer.directory,
 			x:photoshopLayer.x,
 			y:photoshopLayer.y,
 			opacity:photoshopLayer.opacity
