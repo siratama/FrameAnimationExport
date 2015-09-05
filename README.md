@@ -12,6 +12,6 @@
 
 * 同名レイヤーが存在する場合の対処
 
-## help please
+## Wanted information
 
-(https://forums.adobe.com/thread/1936025)https://forums.adobe.com/thread/1936025
+[https://forums.adobe.com/thread/1936025](https://forums.adobe.com/thread/1936025)
