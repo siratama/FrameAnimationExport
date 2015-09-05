@@ -1,18 +1,17 @@
 package jsx;
+import jsx.parser.layer.LayerStructures;
+import lib.Information;
 import jsx.parser.directory.DirectoryStructure;
 import lib.PhotoshopLayer;
-import jsx.json_convertion.directory.DirectoryStructureToJsonConverter;
 import jsx.parser.layer.LayerData;
 import jsx.parser.layer.LayerStructure;
 import jsx.output.DirectoryCreation;
 
-import jsx.json_convertion.layer.LayerStructueToJsonConverter;
 import jsx.output.ImageExport;
 import jsx.output.DirectoryCreation.DirectoryCreationEvent;
 import jsx.output.JsonExport;
 import psd.Units;
 import js.Lib;
-import jsx.util.PrivateAPI;
 import common.FrameAnimationExportInitialErrorEvent;
 import haxe.Serializer;
 import haxe.Unserializer;
@@ -29,9 +28,8 @@ class FrameAnimationExport
 	private var application:Application;
 	private var activeDocument:Document;
 	private var directoryStructure:DirectoryStructure;
-	private var layerStructureSet:Array<LayerStructure>;
-	private var imagePathMap:Map<String, LayerData>;
-	private var photoshopLayerSets:Array<Array<PhotoshopLayer>>;
+	private var information:Information;
+	private var layerStructures:LayerStructures;
 
 	public static function main()
 	{
@@ -47,83 +45,45 @@ class FrameAnimationExport
 	{
 		var error =
 			(application.documents.length == 0) ?
-				FrameAnimationExportInitialError.UNOPENED_DOCUMENT:
-			(!PrivateAPI.timelineAnimationFrameExists()) ?
-				FrameAnimationExportInitialError.TIMELINE_ANIMATION_FRAME_DOES_NOT_EXIST: null;
+				FrameAnimationExportInitialError.UNOPENED_DOCUMENT: null;
 
 		var event = (error == null) ? FrameAnimationExportInitialErrorEvent.NONE: FrameAnimationExportInitialErrorEvent.ERROR(error);
 		return Serializer.run(event);
 	}
 
+	//
 	public function execute():Void
 	{
 		activeDocument = application.activeDocument;
+		createDirectory();
+	}
 
+	//
+	private function createDirectory()
+	{
 		switch(DirectoryCreation.execute())
 		{
 			case DirectoryCreationEvent.ERROR(error):
 				js.Lib.alert(error);
 			case DirectoryCreationEvent.SUCCESS:
 				parse();
-		}		
+		}
 	}
 
 	//
 	private function parse()
 	{
-		parseAllFramelayerStructure();
-		createImagePathMap();
-		createPhotoshopLayerSets();
-		parseDirectoryStructure();
+		layerStructures = new LayerStructures(activeDocument);
+		layerStructures.parse();
+
+		directoryStructure = new DirectoryStructure();
+		directoryStructure.parse(layerStructures.imagePathMap);
+
+		information = {
+			filename:activeDocument.name
+		};
 
 		output();
-	}
-	private function parseAllFramelayerStructure()
-	{
-		layerStructureSet = [];
-
-		var timelineAnimationFrameIndex = PrivateAPI.TIMELINE_ANIMATION_FRAME_FIRST_INDEX;
-		while(true)
-		{
-			try{
-				PrivateAPI.selectTimelineAnimationFrame(timelineAnimationFrameIndex);
-				var layerStructure = new LayerStructure(activeDocument.layers, []);
-				layerStructure.parse();
-				layerStructureSet.push(layerStructure);
-
-			}catch(e:Dynamic){
-				break;
-			}
-			timelineAnimationFrameIndex++;
-		}
-	}
-	private function createImagePathMap()
-	{
-		imagePathMap = new Map();
-		for (layerStructure in layerStructureSet)
-		{
-			var map = layerStructure.createImagePathMap();
-			for (key in map.keys())
-			{
-				if(!imagePathMap.exists(key))
-					imagePathMap[key] = map[key];
-			}
-		}
-	}
-	private function createPhotoshopLayerSets()
-	{
-		photoshopLayerSets = [];
-		for (layerStructure in layerStructureSet)
-		{
-			photoshopLayerSets.push(
-				layerStructure.getPhotoshopLayerSet()
-			);
-		}
-	}
-	private function parseDirectoryStructure()
-	{
-		directoryStructure = new DirectoryStructure();
-		directoryStructure.parse(imagePathMap);
 	}
 
 	//
@@ -140,7 +100,11 @@ class FrameAnimationExport
 	}
 	private function outputJson():Bool
 	{
-		var jsonExport = new JsonExport(photoshopLayerSets, imagePathMap, directoryStructure.rootDirectoryData);
+		var jsonExport = new JsonExport(
+			layerStructures,
+			directoryStructure.rootDirectoryData,
+			information
+		);
 		return jsonExport.execute();
 	}
 	private function outputImage()
@@ -149,9 +113,9 @@ class FrameAnimationExport
 		//PrivateAPI.selectTimelineAnimationFrame(PrivateAPI.TIMELINE_ANIMATION_FRAME_FIRST_INDEX);
 
 		psd.Lib.preferences.rulerUnits = Units.PIXELS;
-		for (key in imagePathMap.keys())
+		for (key in layerStructures.imagePathMap.keys())
 		{
-			var layerData:LayerData = imagePathMap[key];
+			var layerData:LayerData = layerStructures.imagePathMap[key];
 			var outputImage = new ImageExport(application, layerData);
 			outputImage.execute();
 		}

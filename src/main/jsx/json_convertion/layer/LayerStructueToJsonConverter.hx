@@ -5,14 +5,16 @@ import lib.PhotoshopLayer;
 
 class LayerStructueToJsonConverter
 {
-	public static function toDefault(photoshopLayerSets:Array<Array<PhotoshopLayer>>):String
+	public static function execute(photoshopLayerSets:Array<Array<PhotoshopLayer>>):String
 	{
 		return toJson(photoshopLayerSets, LayerToJsonConverter.toJson);
 	}
+	/*
 	public static function toArray(photoshopLayerSets:Array<Array<PhotoshopLayer>>):String
 	{
 		return toJson(photoshopLayerSets, LayerToJsonConverter.toArrayString);
 	}
+	*/
 	private static function toJson(photoshopLayerSets:Array<Array<PhotoshopLayer>>, toFunction:PhotoshopLayer->String):String
 	{
 		var json = JsonStructure.ARRAY_START + JsonStructure.CR;
@@ -39,6 +41,23 @@ class LayerStructueToJsonConverter
 			setLines += JsonStructure.CR;
 			json += setLines;
 		}
+		json += JsonStructure.ARRAY_END;
+		return json;
+	}
+
+	public static function executeIndex(pathSet:Array<String>):String
+	{
+		var json = JsonStructure.ARRAY_START + JsonStructure.CR;
+		for (i in 0...pathSet.length)
+		{
+			var line = '${JsonStructure.TAB}"${pathSet[i]}"';
+			if(i < pathSet.length - 1){
+				line += JsonStructure.CLUMN;
+			}
+			line += JsonStructure.CR;
+			json += line;
+		}
+
 		json += JsonStructure.ARRAY_END;
 		return json;
 	}

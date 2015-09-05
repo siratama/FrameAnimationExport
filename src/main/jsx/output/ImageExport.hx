@@ -16,10 +16,6 @@ class ImageExport
 {
 	private var layerData:LayerData;
 	private var application:Application;
-	/*
-	private var outputDirectoryPath:String;
-	private var outputAssetsDirectoryPath:String;
-	*/
 
 	public function new(application:Application, layerData:LayerData)
 	{

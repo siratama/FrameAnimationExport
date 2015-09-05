@@ -5,6 +5,7 @@ import lib.Directory;
 import jsx.parser.layer.LayerData;
 class DirectoryStructureToJsonConverter
 {
+	/*
 	public static function toPathSet(imagePathMap:Map<String, LayerData>):String
 	{
 		var json = JsonStructure.ARRAY_START + JsonStructure.CR;
@@ -26,6 +27,7 @@ class DirectoryStructureToJsonConverter
 		json += JsonStructure.ARRAY_END;
 		return json;
 	}
+	*/
 
 
 	private static inline var TEMPLATE_JSON =
@@ -39,12 +41,12 @@ class DirectoryStructureToJsonConverter
 ::tab::	]
 ::tab::}';
 
-	public static function toDirectory(directoryData:DirectoryData)
+	public static function execute(directoryData:DirectoryData):String
 	{
 		var directory = directoryData.toDirectory();
-		return toDirectoryRoop(directory);
+		return executeRoop(directory);
 	}
-	private static function toDirectoryRoop(directory:Directory, nest:Int=0):String
+	private static function executeRoop(directory:Directory, nest:Int=0):String
 	{
 		var tab = "";
 		for(i in 0...nest)
@@ -83,7 +85,7 @@ class DirectoryStructureToJsonConverter
 		for(i in 0...directories.length)
 		{
 			var childDirectory = directories[i];
-			json += toDirectoryRoop(childDirectory, nest+1);
+			json += executeRoop(childDirectory, nest+1);
 
 			if(i < directories.length - 1){
 				json += JsonStructure.CLUMN + JsonStructure.CR;

@@ -4,6 +4,7 @@ import adobe.File;
 @:native("Document")
 extern class Document
 {
+	public var name(default, null):String;
 	public var activeLayer:Layer;
 	public var artLayers(default, null):ArtLayers;
 	public var layers(default, null):Layers;

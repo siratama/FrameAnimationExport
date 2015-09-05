@@ -1326,7 +1326,6 @@ adobe.cep._UIColorType.UIColorType_Impl_.RGB = 1;
 adobe.cep._UIColorType.UIColorType_Impl_.GRADATION = 2;
 common.ClassName.PIXEL_OUTLINE = "PixelOutline";
 common._FrameAnimationExportInitialErrorEvent.FrameAnimationExportInitialError_Impl_.UNOPENED_DOCUMENT = "Unopened document.";
-common._FrameAnimationExportInitialErrorEvent.FrameAnimationExportInitialError_Impl_.TIMELINE_ANIMATION_FRAME_DOES_NOT_EXIST = "Timeline animation frame does not exist.";
 extension.JsxLoader.JSX_DIRECTORY = "/jsx/";
 extension.JsxLoader.JSX_EXTENSION = ".jsx";
 extension.JsxLoader.LOAD_JSX_SET = ["PixelOutline"];
