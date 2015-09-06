@@ -1415,6 +1415,7 @@ var PixelOutline = $hxClasses["PixelOutline"] = function(frame1offset) {
 };
 PixelOutline.__name__ = ["PixelOutline"];
 PixelOutline.main = function() {
+	jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute(true);
 };
 PixelOutline.prototype = {
 	getInitialErrorEvent: function() {

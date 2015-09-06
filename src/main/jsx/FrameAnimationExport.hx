@@ -30,16 +30,20 @@ class FrameAnimationExport
 	private var directoryStructure:DirectoryStructure;
 	private var information:Information;
 	private var layerStructures:LayerStructures;
+	private var frame1offset:Bool;
 
 	public static function main()
 	{
 		#if jsx
-		FrameAnimationExportJSXRunner.execute();
+		FrameAnimationExportJSXRunner.execute(false);
+		#elseif jsx_offset
+		FrameAnimationExportJSXRunner.execute(true);
 		#end
 	}
-	public function new()
+	public function new(frame1offset:Bool)
 	{
 		application = app;
+		this.frame1offset = frame1offset;
 	}
 	public function getInitialErrorEvent():String
 	{
@@ -73,7 +77,7 @@ class FrameAnimationExport
 	//
 	private function parse()
 	{
-		layerStructures = new LayerStructures(activeDocument);
+		layerStructures = new LayerStructures(activeDocument, frame1offset);
 		layerStructures.parse();
 
 		directoryStructure = new DirectoryStructure();
@@ -124,9 +128,9 @@ class FrameAnimationExport
 }
 private class FrameAnimationExportJSXRunner
 {
-	public static function execute()
+	public static function execute(frame1offset:Bool)
 	{
-		var frameAnimationExport = new FrameAnimationExport();
+		var frameAnimationExport = new FrameAnimationExport(frame1offset);
 		var errorEvent:FrameAnimationExportInitialErrorEvent = Unserializer.run(frameAnimationExport.getInitialErrorEvent());
 		switch(errorEvent)
 		{

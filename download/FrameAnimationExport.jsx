@@ -1409,12 +1409,13 @@ js.Lib.__name__ = ["js","Lib"];
 js.Lib.alert = function(v) {
 	alert(js.Boot.__string_rec(v,""));
 };
-var PixelOutline = $hxClasses["PixelOutline"] = function() {
+var PixelOutline = $hxClasses["PixelOutline"] = function(frame1offset) {
 	this.application = psd.Lib.app;
+	this.frame1offset = frame1offset;
 };
 PixelOutline.__name__ = ["PixelOutline"];
 PixelOutline.main = function() {
-	jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute();
+	jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute(false);
 };
 PixelOutline.prototype = {
 	getInitialErrorEvent: function() {
@@ -1443,7 +1444,7 @@ PixelOutline.prototype = {
 		}
 	}
 	,parse: function() {
-		this.layerStructures = new jsx.parser.layer.LayerStructures(this.activeDocument);
+		this.layerStructures = new jsx.parser.layer.LayerStructures(this.activeDocument,this.frame1offset);
 		this.layerStructures.parse();
 		this.directoryStructure = new jsx.parser.directory.DirectoryStructure();
 		this.directoryStructure.parse(this.layerStructures.imagePathMap);
@@ -1476,8 +1477,8 @@ var jsx = jsx || {};
 if(!jsx._FrameAnimationExport) jsx._FrameAnimationExport = {};
 jsx._FrameAnimationExport.FrameAnimationExportJSXRunner = $hxClasses["jsx._FrameAnimationExport.FrameAnimationExportJSXRunner"] = function() { };
 jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.__name__ = ["jsx","_FrameAnimationExport","FrameAnimationExportJSXRunner"];
-jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute = function() {
-	var frameAnimationExport = new PixelOutline();
+jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute = function(frame1offset) {
+	var frameAnimationExport = new PixelOutline(frame1offset);
 	var errorEvent = haxe.Unserializer.run(frameAnimationExport.getInitialErrorEvent());
 	switch(errorEvent[1]) {
 	case 1:
@@ -1792,14 +1793,20 @@ jsx.parser.layer.LayerData = $hxClasses["jsx.parser.layer.LayerData"] = function
 	this.layer = layer;
 	this.directoryPath = directoryPath;
 	this.bounds = jsx.util.Bounds.convert(layer.bounds);
+	this.x = this.bounds.left;
+	this.y = this.bounds.top;
 	this.opacity = Math.round(layer.opacity);
 	this.fileName = new EReg(" ","g").replace(layer.name,"-");
 	if(directoryPath.length == 0) this.path = this.fileName; else this.path = [directoryPath.join("/"),this.fileName].join("/");
 };
 jsx.parser.layer.LayerData.__name__ = ["jsx","parser","layer","LayerData"];
 jsx.parser.layer.LayerData.prototype = {
-	toPhotoshopLayer: function() {
-		var photoshopLayer = { name : this.fileName, directory : this.getDirectoryPathString(), path : this.path, x : this.bounds.left, y : this.bounds.top, opacity : this.opacity};
+	offsetPosition: function(point) {
+		this.x -= point.x;
+		this.y -= point.y;
+	}
+	,toPhotoshopLayer: function() {
+		var photoshopLayer = { name : this.fileName, directory : this.getDirectoryPathString(), path : this.path, x : this.x, y : this.y, opacity : this.opacity};
 		return photoshopLayer;
 	}
 	,getDirectoryPathString: function() {
@@ -1892,6 +1899,28 @@ jsx.parser.layer.LayerStructure.prototype = {
 		}
 		return usedPathSet;
 	}
+	,getOffsetPosition: function() {
+		var offsetX = null;
+		var offsetY = null;
+		var _g = 0;
+		var _g1 = this.layerDataSet;
+		while(_g < _g1.length) {
+			var layerData = _g1[_g];
+			++_g;
+			if(offsetX == null || layerData.x < offsetX) offsetX = layerData.x;
+			if(offsetY == null || layerData.y < offsetY) offsetY = layerData.y;
+		}
+		return new jsx.util.Point(offsetX,offsetY);
+	}
+	,offsetPosition: function(point) {
+		var _g = 0;
+		var _g1 = this.layerDataSet;
+		while(_g < _g1.length) {
+			var layerData = _g1[_g];
+			++_g;
+			layerData.offsetPosition(point);
+		}
+	}
 	,__class__: jsx.parser.layer.LayerStructure
 };
 jsx.parser.layer.TempPath = $hxClasses["jsx.parser.layer.TempPath"] = function(path) {
@@ -1902,14 +1931,16 @@ jsx.parser.layer.TempPath.__name__ = ["jsx","parser","layer","TempPath"];
 jsx.parser.layer.TempPath.prototype = {
 	__class__: jsx.parser.layer.TempPath
 };
-jsx.parser.layer.LayerStructures = $hxClasses["jsx.parser.layer.LayerStructures"] = function(document) {
+jsx.parser.layer.LayerStructures = $hxClasses["jsx.parser.layer.LayerStructures"] = function(document,frame1offset) {
 	this.document = document;
+	this.frame1offset = frame1offset;
 	this.set = [];
 };
 jsx.parser.layer.LayerStructures.__name__ = ["jsx","parser","layer","LayerStructures"];
 jsx.parser.layer.LayerStructures.prototype = {
 	parse: function() {
 		if(jsx.util.PrivateAPI.timelineAnimationFrameExists()) this.parseAllFrames(); else this.parseFrame();
+		this.offsetAlongFrame1();
 		this.createImagePathMap();
 		this.createPhotoshopLayerSets();
 		this.createUsedPathSet();
@@ -1930,6 +1961,17 @@ jsx.parser.layer.LayerStructures.prototype = {
 		var layerStructure = new jsx.parser.layer.LayerStructure(this.document.layers,[],false);
 		layerStructure.parse();
 		this.set.push(layerStructure);
+	}
+	,offsetAlongFrame1: function() {
+		if(!this.frame1offset) return;
+		var offsetPosition = this.set[0].getOffsetPosition();
+		var _g = 0;
+		var _g1 = this.set;
+		while(_g < _g1.length) {
+			var layerStructure = _g1[_g];
+			++_g;
+			layerStructure.offsetPosition(offsetPosition);
+		}
 	}
 	,createImagePathMap: function() {
 		this.imagePathMap = new haxe.ds.StringMap();
@@ -2019,6 +2061,14 @@ jsx.util.ErrorChecker.hasPixel = function(layer) {
 		if(bound == null) return false;
 	}
 	return true;
+};
+jsx.util.Point = $hxClasses["jsx.util.Point"] = function(x,y) {
+	this.x = x;
+	this.y = y;
+};
+jsx.util.Point.__name__ = ["jsx","util","Point"];
+jsx.util.Point.prototype = {
+	__class__: jsx.util.Point
 };
 jsx.util.PrivateAPI = $hxClasses["jsx.util.PrivateAPI"] = function() { };
 jsx.util.PrivateAPI.__name__ = ["jsx","util","PrivateAPI"];

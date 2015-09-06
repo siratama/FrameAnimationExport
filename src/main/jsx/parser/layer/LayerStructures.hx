@@ -5,15 +5,17 @@ import jsx.util.PrivateAPI;
 class LayerStructures
 {
 	private var document:Document;
+	private var frame1offset:Bool;
 
 	public var set(default, null):Array<LayerStructure>;
 	public var imagePathMap(default, null):Map<String, LayerData>;
 	public var photoshopLayerSets(default, null):Array<Array<PhotoshopLayer>>;
 	public var usedPathSet(default, null):Array<String>;
 
-	public function new(document:Document)
+	public function new(document:Document, frame1offset:Bool)
 	{
 		this.document = document;
+		this.frame1offset = frame1offset;
 		set = [];
 	}
 	public function parse()
@@ -22,6 +24,8 @@ class LayerStructures
 			parseAllFrames();
 		else
 			parseFrame();
+
+		offsetAlongFrame1();
 
 		createImagePathMap();
 		createPhotoshopLayerSets();
@@ -46,6 +50,16 @@ class LayerStructures
 		var layerStructure = new LayerStructure(document.layers, [], false);
 		layerStructure.parse();
 		set.push(layerStructure);
+	}
+	private function offsetAlongFrame1()
+	{
+		if(!frame1offset) return;
+
+		var offsetPosition = set[0].getOffsetPosition();
+		for (layerStructure in set)
+		{
+			layerStructure.offsetPosition(offsetPosition);
+		}
 	}
 
 	private function createImagePathMap()

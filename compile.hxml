@@ -20,3 +20,11 @@
 -main jsx.FrameAnimationExport
 -D js-classic
 -D jsx
+
+--next
+
+-js download/FrameAnimationExportAlongFrame1Offset.jsx
+-main jsx.FrameAnimationExport
+-D js-classic
+-D jsx_offset
+

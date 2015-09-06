@@ -1,5 +1,6 @@
 package jsx.parser.layer;
 
+import jsx.util.Point;
 import lib.PhotoshopLayer;
 import psd.LayerSet;
 import psd.Layers;
@@ -92,6 +93,27 @@ class LayerStructure
 			}
 		}
 		return usedPathSet;
+	}
+
+	public function getOffsetPosition():Point
+	{
+		var offsetX:Null<Float> = null;
+		var offsetY:Null<Float> = null;
+		for(layerData in layerDataSet)
+		{
+			if(offsetX == null || layerData.x < offsetX){
+				offsetX = layerData.x;
+			}
+			if(offsetY == null || layerData.y < offsetY){
+				offsetY = layerData.y;
+			}
+		}
+		return new Point(offsetX, offsetY);
+	}
+	public function offsetPosition(point:Point)
+	{
+		for(layerData in layerDataSet)
+			layerData.offsetPosition(point);
 	}
 }
 
