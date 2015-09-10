@@ -1,12 +1,10 @@
 package jsx;
+
 import jsx.parser.layer.LayerStructures;
 import lib.Information;
 import jsx.parser.directory.DirectoryStructure;
-import lib.PhotoshopLayer;
 import jsx.parser.layer.LayerData;
-import jsx.parser.layer.LayerStructure;
 import jsx.output.DirectoryCreation;
-
 import jsx.output.ImageExport;
 import jsx.output.DirectoryCreation.DirectoryCreationEvent;
 import jsx.output.JsonExport;
@@ -22,7 +20,7 @@ import psd.Lib.app;
 using jsx.util.ErrorChecker;
 
 @:keep
-@:native("PixelOutline")
+@:native("FrameAnimationExport")
 class FrameAnimationExport
 {
 	private var application:Application;
@@ -30,20 +28,24 @@ class FrameAnimationExport
 	private var directoryStructure:DirectoryStructure;
 	private var information:Information;
 	private var layerStructures:LayerStructures;
-	private var frame1offset:Bool;
 
 	public static function main()
 	{
 		#if jsx
-		FrameAnimationExportJSXRunner.execute(false);
+		FrameAnimationExportJSXRunner.execute(false, false);
 		#elseif jsx_offset
-		FrameAnimationExportJSXRunner.execute(true);
+		FrameAnimationExportJSXRunner.execute(true, false);
+		//FrameAnimationExportJSXRunner.execute(true, true); //test
 		#end
 	}
-	public function new(frame1offset:Bool)
+	public function new(frame1offset:Bool, ignoredFrame1Output:Bool)
 	{
+		if(!frame1offset && ignoredFrame1Output){
+			js.Lib.alert("parameter error");
+		}
+
+		OptionalParameter.instance.set(frame1offset, ignoredFrame1Output);
 		application = app;
-		this.frame1offset = frame1offset;
 	}
 	public function getInitialErrorEvent():String
 	{
@@ -77,7 +79,7 @@ class FrameAnimationExport
 	//
 	private function parse()
 	{
-		layerStructures = new LayerStructures(activeDocument, frame1offset);
+		layerStructures = new LayerStructures(activeDocument);
 		layerStructures.parse();
 
 		directoryStructure = new DirectoryStructure();
@@ -128,9 +130,9 @@ class FrameAnimationExport
 }
 private class FrameAnimationExportJSXRunner
 {
-	public static function execute(frame1offset:Bool)
+	public static function execute(frame1offset:Bool, ignoredFrame1Output:Bool)
 	{
-		var frameAnimationExport = new FrameAnimationExport(frame1offset);
+		var frameAnimationExport = new FrameAnimationExport(frame1offset, ignoredFrame1Output);
 		var errorEvent:FrameAnimationExportInitialErrorEvent = Unserializer.run(frameAnimationExport.getInitialErrorEvent());
 		switch(errorEvent)
 		{

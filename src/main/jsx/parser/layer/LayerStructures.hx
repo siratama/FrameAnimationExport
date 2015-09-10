@@ -1,35 +1,42 @@
 package jsx.parser.layer;
+import jsx.OptionalParameter;
 import lib.PhotoshopLayer;
 import psd.Document;
 import jsx.util.PrivateAPI;
 class LayerStructures
 {
 	private var document:Document;
-	private var frame1offset:Bool;
 
 	public var set(default, null):Array<LayerStructure>;
 	public var imagePathMap(default, null):Map<String, LayerData>;
 	public var photoshopLayerSets(default, null):Array<Array<PhotoshopLayer>>;
 	public var usedPathSet(default, null):Array<String>;
 
-	public function new(document:Document, frame1offset:Bool)
+	private var sameLayerNameCheckedLayerStructure:LayerStructure;
+
+	public function new(document:Document)
 	{
 		this.document = document;
-		this.frame1offset = frame1offset;
 		set = [];
 	}
 	public function parse()
 	{
+		renameSameNameLayer();
+
 		if(PrivateAPI.timelineAnimationFrameExists())
 			parseAllFrames();
 		else
 			parseFrame();
 
 		offsetAlongFrame1();
+		if(set.length != 1 && OptionalParameter.instance.ignoredFrame1Output){
+			set.shift();
+		}
 
 		createImagePathMap();
 		createPhotoshopLayerSets();
 		createUsedPathSet();
+		renameToOriginalName();
 	}
 	private function parseAllFrames()
 	{
@@ -53,7 +60,7 @@ class LayerStructures
 	}
 	private function offsetAlongFrame1()
 	{
-		if(!frame1offset) return;
+		if(!OptionalParameter.instance.frame1offset) return;
 
 		var offsetPosition = set[0].getOffsetPosition();
 		for (layerStructure in set)
@@ -90,5 +97,16 @@ class LayerStructures
 		var layerStructure = new LayerStructure(document.layers, [], true);
 		layerStructure.parse();
 		usedPathSet = layerStructure.createUsedPathSet(imagePathMap);
+	}
+
+	private function renameSameNameLayer()
+	{
+		sameLayerNameCheckedLayerStructure = new LayerStructure(document.layers, [], true);
+		sameLayerNameCheckedLayerStructure.parse();
+		sameLayerNameCheckedLayerStructure.renameSameNameLayer();
+	}
+	private function renameToOriginalName()
+	{
+		sameLayerNameCheckedLayerStructure.renameToOriginalName();
 	}
 }

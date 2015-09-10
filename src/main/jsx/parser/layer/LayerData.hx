@@ -17,6 +17,7 @@ class LayerData
 	public var fileName(default, null):String;
 	public var x(default, null):Float;
 	public var y(default, null):Float;
+	private var renamedFileName:Null<String>;
 
 	public function new(layer:Layer, directoryPath:Array<String>)
 	{
@@ -31,6 +32,21 @@ class LayerData
 		//When space exists in file name(layer name), when outputting, replaced by hyphen.
 		fileName = ~/ /g.replace(layer.name, "-");
 
+		setPath(fileName);
+	}
+	public function renameLayer(renamedName:String)
+	{
+		this.renamedFileName = renamedName;
+		layer.name = renamedName;
+		setPath(renamedName);
+	}
+	public function renameToOriginalName()
+	{
+		if(renamedFileName != null)
+			layer.name = fileName;
+	}
+	private function setPath(fileName:String)
+	{
 		path = (directoryPath.length == 0) ?
 			fileName :
 			[directoryPath.join(FileDirectory.PATH_COLUMN), fileName].join(FileDirectory.PATH_COLUMN);

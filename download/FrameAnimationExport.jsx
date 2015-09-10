@@ -1409,15 +1409,16 @@ js.Lib.__name__ = ["js","Lib"];
 js.Lib.alert = function(v) {
 	alert(js.Boot.__string_rec(v,""));
 };
-var PixelOutline = $hxClasses["PixelOutline"] = function(frame1offset) {
+var FrameAnimationExport = $hxClasses["FrameAnimationExport"] = function(frame1offset,ignoredFrame1Output) {
+	if(!frame1offset && ignoredFrame1Output) js.Lib.alert("parameter error");
+	(jsx.OptionalParameter.instance == null?jsx.OptionalParameter.instance = new jsx.OptionalParameter():jsx.OptionalParameter.instance).set(frame1offset,ignoredFrame1Output);
 	this.application = psd.Lib.app;
-	this.frame1offset = frame1offset;
 };
-PixelOutline.__name__ = ["PixelOutline"];
-PixelOutline.main = function() {
-	jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute(false);
+FrameAnimationExport.__name__ = ["FrameAnimationExport"];
+FrameAnimationExport.main = function() {
+	jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute(false,false);
 };
-PixelOutline.prototype = {
+FrameAnimationExport.prototype = {
 	getInitialErrorEvent: function() {
 		var error;
 		if(this.application.documents.length == 0) error = "Unopened document."; else error = null;
@@ -1444,7 +1445,7 @@ PixelOutline.prototype = {
 		}
 	}
 	,parse: function() {
-		this.layerStructures = new jsx.parser.layer.LayerStructures(this.activeDocument,this.frame1offset);
+		this.layerStructures = new jsx.parser.layer.LayerStructures(this.activeDocument);
 		this.layerStructures.parse();
 		this.directoryStructure = new jsx.parser.directory.DirectoryStructure();
 		this.directoryStructure.parse(this.layerStructures.imagePathMap);
@@ -1471,14 +1472,14 @@ PixelOutline.prototype = {
 		}
 		this.activeDocument.selection.deselect();
 	}
-	,__class__: PixelOutline
+	,__class__: FrameAnimationExport
 };
 var jsx = jsx || {};
 if(!jsx._FrameAnimationExport) jsx._FrameAnimationExport = {};
 jsx._FrameAnimationExport.FrameAnimationExportJSXRunner = $hxClasses["jsx._FrameAnimationExport.FrameAnimationExportJSXRunner"] = function() { };
 jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.__name__ = ["jsx","_FrameAnimationExport","FrameAnimationExportJSXRunner"];
-jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute = function(frame1offset) {
-	var frameAnimationExport = new PixelOutline(frame1offset);
+jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute = function(frame1offset,ignoredFrame1Output) {
+	var frameAnimationExport = new FrameAnimationExport(frame1offset,ignoredFrame1Output);
 	var errorEvent = haxe.Unserializer.run(frameAnimationExport.getInitialErrorEvent());
 	switch(errorEvent[1]) {
 	case 1:
@@ -1489,6 +1490,19 @@ jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute = function(frame
 		frameAnimationExport.execute();
 		break;
 	}
+};
+jsx.OptionalParameter = $hxClasses["jsx.OptionalParameter"] = function() {
+};
+jsx.OptionalParameter.__name__ = ["jsx","OptionalParameter"];
+jsx.OptionalParameter.get_instance = function() {
+	if(jsx.OptionalParameter.instance == null) return jsx.OptionalParameter.instance = new jsx.OptionalParameter(); else return jsx.OptionalParameter.instance;
+};
+jsx.OptionalParameter.prototype = {
+	set: function(frame1offset,ignoredFrame1Output) {
+		this.frame1offset = frame1offset;
+		this.ignoredFrame1Output = ignoredFrame1Output;
+	}
+	,__class__: jsx.OptionalParameter
 };
 if(!jsx.json_convertion) jsx.json_convertion = {};
 jsx.json_convertion.JsonStructure = $hxClasses["jsx.json_convertion.JsonStructure"] = function() { };
@@ -1797,11 +1811,22 @@ jsx.parser.layer.LayerData = $hxClasses["jsx.parser.layer.LayerData"] = function
 	this.y = this.bounds.top;
 	this.opacity = Math.round(layer.opacity);
 	this.fileName = new EReg(" ","g").replace(layer.name,"-");
-	if(directoryPath.length == 0) this.path = this.fileName; else this.path = [directoryPath.join("/"),this.fileName].join("/");
+	this.setPath(this.fileName);
 };
 jsx.parser.layer.LayerData.__name__ = ["jsx","parser","layer","LayerData"];
 jsx.parser.layer.LayerData.prototype = {
-	offsetPosition: function(point) {
+	renameLayer: function(renamedName) {
+		this.renamedFileName = renamedName;
+		this.layer.name = renamedName;
+		this.setPath(renamedName);
+	}
+	,renameToOriginalName: function() {
+		if(this.renamedFileName != null) this.layer.name = this.fileName;
+	}
+	,setPath: function(fileName) {
+		if(this.directoryPath.length == 0) this.path = fileName; else this.path = [this.directoryPath.join("/"),fileName].join("/");
+	}
+	,offsetPosition: function(point) {
 		this.x -= point.x;
 		this.y -= point.y;
 	}
@@ -1834,9 +1859,9 @@ jsx.parser.layer.LayerStructure.prototype = {
 				layerSet = js.Boot.__cast(layer , LayerSet);
 				var directoryPath = this.parentDirectoryPath.slice();
 				directoryPath.push(layer.name);
-				var directory = new jsx.parser.layer.LayerStructure(layerSet.layers,directoryPath,this.includedInvisibleLayer);
-				directory.parse();
-				this.layerDataSet = this.layerDataSet.concat(directory.layerDataSet);
+				var childLayerStructure = new jsx.parser.layer.LayerStructure(layerSet.layers,directoryPath,this.includedInvisibleLayer);
+				childLayerStructure.parse();
+				this.layerDataSet = this.layerDataSet.concat(childLayerStructure.layerDataSet);
 			} else {
 				var layerData = new jsx.parser.layer.LayerData(layer,this.parentDirectoryPath);
 				if(!layerData.bounds.isNull()) this.layerDataSet.push(layerData);
@@ -1921,6 +1946,48 @@ jsx.parser.layer.LayerStructure.prototype = {
 			layerData.offsetPosition(point);
 		}
 	}
+	,renameSameNameLayer: function() {
+		var layerNameMap = new haxe.ds.StringMap();
+		var _g = 0;
+		var _g1 = this.layerDataSet;
+		while(_g < _g1.length) {
+			var layerData = _g1[_g];
+			++_g;
+			if(layerNameMap.get(layerData.path) == null) {
+				layerNameMap.set(layerData.path,layerData);
+				layerData;
+				continue;
+			}
+			var arr = layerData.path.split("_");
+			var copyIdString;
+			if(arr.length == 1) copyIdString = "1"; else copyIdString = arr[arr.length - 1];
+			var copyId = Std.parseInt(copyIdString);
+			if(copyId == null) {
+				layerNameMap.set(layerData.path,layerData);
+				layerData;
+				continue;
+			}
+			this.renameSameLayerIncrementRoop(layerNameMap,layerData,copyId);
+		}
+	}
+	,renameSameLayerIncrementRoop: function(layerNameMap,layerData,copyId) {
+		var renamedLayerName;
+		renamedLayerName = layerData.fileName + "_" + (copyId == null?"null":"" + copyId);
+		if(layerNameMap.get(renamedLayerName) == null) {
+			layerNameMap.set(renamedLayerName,layerData);
+			layerData;
+			layerData.renameLayer(renamedLayerName);
+		} else this.renameSameLayerIncrementRoop(layerNameMap,layerData,++copyId);
+	}
+	,renameToOriginalName: function() {
+		var _g = 0;
+		var _g1 = this.layerDataSet;
+		while(_g < _g1.length) {
+			var layerData = _g1[_g];
+			++_g;
+			layerData.renameToOriginalName();
+		}
+	}
 	,__class__: jsx.parser.layer.LayerStructure
 };
 jsx.parser.layer.TempPath = $hxClasses["jsx.parser.layer.TempPath"] = function(path) {
@@ -1931,19 +1998,21 @@ jsx.parser.layer.TempPath.__name__ = ["jsx","parser","layer","TempPath"];
 jsx.parser.layer.TempPath.prototype = {
 	__class__: jsx.parser.layer.TempPath
 };
-jsx.parser.layer.LayerStructures = $hxClasses["jsx.parser.layer.LayerStructures"] = function(document,frame1offset) {
+jsx.parser.layer.LayerStructures = $hxClasses["jsx.parser.layer.LayerStructures"] = function(document) {
 	this.document = document;
-	this.frame1offset = frame1offset;
 	this.set = [];
 };
 jsx.parser.layer.LayerStructures.__name__ = ["jsx","parser","layer","LayerStructures"];
 jsx.parser.layer.LayerStructures.prototype = {
 	parse: function() {
+		this.renameSameNameLayer();
 		if(jsx.util.PrivateAPI.timelineAnimationFrameExists()) this.parseAllFrames(); else this.parseFrame();
 		this.offsetAlongFrame1();
+		if(this.set.length != 1 && (jsx.OptionalParameter.instance == null?jsx.OptionalParameter.instance = new jsx.OptionalParameter():jsx.OptionalParameter.instance).ignoredFrame1Output) this.set.shift();
 		this.createImagePathMap();
 		this.createPhotoshopLayerSets();
 		this.createUsedPathSet();
+		this.renameToOriginalName();
 	}
 	,parseAllFrames: function() {
 		var timelineAnimationFrameIndex = 1;
@@ -1963,7 +2032,7 @@ jsx.parser.layer.LayerStructures.prototype = {
 		this.set.push(layerStructure);
 	}
 	,offsetAlongFrame1: function() {
-		if(!this.frame1offset) return;
+		if(!(jsx.OptionalParameter.instance == null?jsx.OptionalParameter.instance = new jsx.OptionalParameter():jsx.OptionalParameter.instance).frame1offset) return;
 		var offsetPosition = this.set[0].getOffsetPosition();
 		var _g = 0;
 		var _g1 = this.set;
@@ -2006,6 +2075,14 @@ jsx.parser.layer.LayerStructures.prototype = {
 		var layerStructure = new jsx.parser.layer.LayerStructure(this.document.layers,[],true);
 		layerStructure.parse();
 		this.usedPathSet = layerStructure.createUsedPathSet(this.imagePathMap);
+	}
+	,renameSameNameLayer: function() {
+		this.sameLayerNameCheckedLayerStructure = new jsx.parser.layer.LayerStructure(this.document.layers,[],true);
+		this.sameLayerNameCheckedLayerStructure.parse();
+		this.sameLayerNameCheckedLayerStructure.renameSameNameLayer();
+	}
+	,renameToOriginalName: function() {
+		this.sameLayerNameCheckedLayerStructure.renameToOriginalName();
 	}
 	,__class__: jsx.parser.layer.LayerStructures
 };
@@ -2200,6 +2277,8 @@ jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.OUTPUT_FOLDER_CREATIO
 jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.OUTPUT_ASSETS_FOLDER_CREATION_ERROR = "Output assets folder creation error.";
 jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.OUTPUT_JSON_LAYER_FOLDER_CREATION_ERROR = "Output json layer folder creation error.";
 jsx.output._DirectoryCreation.DirectoryCreationError_Impl_.OUTPUT_JSON_DIRECTORY_FOLDER_CREATION_ERROR = "Output json assets folder creation error.";
+jsx.parser.layer.LayerStructure.COPY_NAME_CLUMN = "_";
+jsx.parser.layer.LayerStructure.COPY_NAME_DEFAULT_ID = "1";
 jsx.util.PrivateAPI.TIMELINE_ANIMATION_FRAME_FIRST_INDEX = 1;
 lib.FileDirectory.ROOT_DIRECTORY = "";
 lib.FileDirectory.PATH_COLUMN = "/";
@@ -2228,4 +2307,4 @@ psd_private._CharacterID.CharacterID_Impl_.FSEL = "fsel";
 psd_private._CharacterID.CharacterID_Impl_.T = "T   ";
 psd_private._CharacterID.CharacterID_Impl_.TRSP = "Trsp";
 psd_private._StringID.StringID_Impl_.ANIMATION_FRAME_CLASS = "animationFrameClass";
-PixelOutline.main();
+FrameAnimationExport.main();

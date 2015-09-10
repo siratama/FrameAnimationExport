@@ -9,6 +9,9 @@ import psd.LayerTypeName;
 
 class LayerStructure
 {
+	private static inline var COPY_NAME_CLUMN = "_";
+	private static inline var COPY_NAME_DEFAULT_ID = "1";
+
 	private var layers:Layers;
 	private var parentDirectoryPath:Array<String>;
 	private var includedInvisibleLayer:Bool;
@@ -35,10 +38,10 @@ class LayerStructure
 
 				var directoryPath = parentDirectoryPath.copy();
 				directoryPath.push(layer.name);
-				var directory = new LayerStructure(layerSet.layers, directoryPath, includedInvisibleLayer);
-				directory.parse();
+				var childLayerStructure = new LayerStructure(layerSet.layers, directoryPath, includedInvisibleLayer);
+				childLayerStructure.parse();
 
-				layerDataSet = layerDataSet.concat(directory.layerDataSet);
+				layerDataSet = layerDataSet.concat(childLayerStructure.layerDataSet);
 			}
 			else
 			{
@@ -114,6 +117,46 @@ class LayerStructure
 	{
 		for(layerData in layerDataSet)
 			layerData.offsetPosition(point);
+	}
+	public function renameSameNameLayer()
+	{
+		var layerNameMap = new Map<String, LayerData>();
+		for(layerData in layerDataSet)
+		{
+			if(layerNameMap[layerData.path] == null){
+				layerNameMap[layerData.path] = layerData;
+				continue;
+			}
+
+			var arr = layerData.path.split(COPY_NAME_CLUMN);
+			var copyIdString = (arr.length == 1) ?
+				COPY_NAME_DEFAULT_ID : arr[arr.length - 1];
+
+			var copyId = Std.parseInt(copyIdString);
+			if(copyId == null){
+				layerNameMap[layerData.path] = layerData;
+				continue;
+			}
+			renameSameLayerIncrementRoop(layerNameMap, layerData, copyId);
+		}
+	}
+	private function renameSameLayerIncrementRoop(layerNameMap:Map<String, LayerData>, layerData:LayerData, copyId:Int)
+	{
+		var renamedLayerName = layerData.fileName + COPY_NAME_CLUMN + Std.string(copyId);
+		if(layerNameMap[renamedLayerName] == null){
+			layerNameMap[renamedLayerName] = layerData;
+			layerData.renameLayer(renamedLayerName);
+		}
+		else{
+			renameSameLayerIncrementRoop(layerNameMap, layerData, ++copyId);
+		}
+	}
+	public function renameToOriginalName()
+	{
+		for(layerData in layerDataSet)
+		{
+			layerData.renameToOriginalName();
+		}
 	}
 }
 
