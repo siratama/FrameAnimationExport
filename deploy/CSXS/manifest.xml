@@ -4,7 +4,8 @@
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<Author>
 		<![CDATA[siratama]]>
-	</Author>	<ExtensionList>
+	</Author>
+    <ExtensionList>
 		<Extension Id="com.dango_itimi.FrameAnimationExport.extension1" Version="1.0" />
 	</ExtensionList>
 	<ExecutionEnvironment>

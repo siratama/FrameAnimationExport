@@ -9,7 +9,7 @@ class JsxLoader
 	private var loaded:Bool;
 
 	private static var LOAD_JSX_SET = [
-		ClassName.PIXEL_OUTLINE
+		ClassName.FRAME_ANIMATION_EXPORT
 	];
 	private var loadIndex:Int;
 

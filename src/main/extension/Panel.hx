@@ -1,6 +1,6 @@
 package extension;
 
-import extension.PixelOutlineRunner.PixelOutlineRunnerEvent;
+import extension.FrameAnimationExporter.FrameAnimationExporterEvent;
 import js.Browser;
 import haxe.Timer;
 
@@ -14,7 +14,7 @@ class Panel
 	private var csInterface:AbstractCSInterface;
 	private var jsxLoader:JsxLoader;
 	private var view:View;
-	private var pixelOutlineRunner:PixelOutlineRunner;
+	private var frameAnimationExporter:FrameAnimationExporter;
 
 	public static function main(){
 		new Panel();
@@ -26,7 +26,7 @@ class Panel
 	{
 		csInterface = AbstractCSInterface.create();
 		jsxLoader = new JsxLoader();
-		pixelOutlineRunner = new PixelOutlineRunner();
+		frameAnimationExporter = new FrameAnimationExporter();
 		view = View.instance;
 
 		startRunning(loadJsx, TIMER_SPEED_RUNNING);
@@ -66,29 +66,29 @@ class Panel
 	private function observeToClickUI()
 	{
 		if(view.runButton.isClicked()){
-			initializeToCallPixelOutline(false);
+			initializeToCallFrameAnimationExport(false);
 		}
-		else if(view.runNewLayerButton.isClicked()){
-			initializeToCallPixelOutline(true);
+		else if(view.runFrame1OffsetButton.isClicked()){
+			initializeToCallFrameAnimationExport(true);
 		}
 	}
-	private function initializeToCallPixelOutline(isCreatedNewLayer:Bool)
+	private function initializeToCallFrameAnimationExport(frame1offset:Bool)
 	{
-		pixelOutlineRunner.call(isCreatedNewLayer);
-		changeRunning(callPixelOutline, TIMER_SPEED_RUNNING);
+		frameAnimationExporter.call(frame1offset, view.isIgnoredFrame1Output());
+		changeRunning(callFrameAnimationExport, TIMER_SPEED_RUNNING);
 	}
-	private function callPixelOutline()
+	private function callFrameAnimationExport()
 	{
-		pixelOutlineRunner.run();
-		var event = pixelOutlineRunner.getEvent();
+		frameAnimationExporter.run();
+		var event = frameAnimationExporter.getEvent();
 		switch(event){
-			case PixelOutlineRunnerEvent.NONE: return;
+			case FrameAnimationExporterEvent.NONE: return;
 
-			case PixelOutlineRunnerEvent.INITIAL_ERROR_EVENT(error):
+			case FrameAnimationExporterEvent.INITIAL_ERROR_EVENT(error):
 				js.Lib.alert(cast(error, String));
 				initializeToClickUI();
 
-			case PixelOutlineRunnerEvent.SUCCESS:
+			case FrameAnimationExporterEvent.SUCCESS:
 				initializeToClickUI();
 		}
 	}

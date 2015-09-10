@@ -18,6 +18,7 @@ body {
 
 button {
   height: 32px;
+  width: 130px;
   color: #d7d7d7;
   font-size: 11px;
   border: 1px solid #151515;
@@ -35,17 +36,17 @@ button {
     font-size: 10px;
     color: #bbbbbb; }
 
-hr {
-  border: 1px solid #333333;
-  margin-bottom: 11px; }
+#container .normal {
+  padding: 10px 0 0 20px;
+  margin-bottom: 10px; }
+#container .frame1offset {
+  padding: 10px 0 0 20px; }
+  #container .frame1offset .option {
+    margin-top: 10px;
+    padding-left: 5px; }
 
-#pixel_outline_runner {
-  padding-top: 10px;
-  padding-left: 20px; }
-  #pixel_outline_runner button {
-    width: 130px; }
-  #pixel_outline_runner div {
-    margin-bottom: 5px; }
+hr {
+  border: 1px solid #333333; }
 
 .clear {
   clear: both; }
@@ -64,13 +65,5 @@ hr {
     background-image: url("../img/cursor.png");
     background-repeat: no-repeat;
     background-position: 0 4px; }
-
-ul {
-  list-style: none; }
-
-li {
-  margin: 5px; }
-  li input {
-    vertical-align: middle; }
 
 /*# sourceMappingURL=index.css.map */

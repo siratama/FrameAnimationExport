@@ -1,5 +1,4 @@
 package extension;
-import extension.parts.TitleBar;
 import extension.parts.Button;
 import jQuery.JQuery;
 class View
@@ -10,25 +9,18 @@ class View
 
 	private var element:JQuery;
 	public var runButton(default, null):Button;
-	public var runNewLayerButton(default, null):Button;
+	public var runFrame1OffsetButton(default, null):Button;
 	private function new()
 	{
-		element =  new JQuery("#pixel_outline_runner");
-
-		//new TitleBar("title_option", element);
+		element =  new JQuery("#container");
 
 		runButton = new Button(element, "run_button");
-		runNewLayerButton = new Button(element, "run_new_layer_button");
+		runFrame1OffsetButton = new Button(element, "run_frame1_offset_button");
 	}
-	/*
-	public function isCreatedNewLayer():Bool{
-		return isChecked("new_layer_creation");
-	}
-	public function isDisplayedErrorAlert():Bool{
-		return isChecked("error_alert_display");
+	public function isIgnoredFrame1Output():Bool{
+		return isChecked("ignored_frame1_output");
 	}
 	private function isChecked(className:String):Bool{
 		return new JQuery('.$className', element).is(":checked");
 	}
-	*/
 }

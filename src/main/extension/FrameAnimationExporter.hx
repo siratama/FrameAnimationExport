@@ -6,27 +6,29 @@ import common.JsxEvent;
 import haxe.Unserializer;
 import haxe.Serializer;
 
-enum PixelOutlineRunnerEvent
+enum FrameAnimationExporterEvent
 {
 	INITIAL_ERROR_EVENT(error:FrameAnimationExportInitialError);
 	SUCCESS;
 	NONE;
 }
 
-class PixelOutlineRunner
+class FrameAnimationExporter
 {
 	private var mainFunction:Void->Void;
 	private var csInterface:AbstractCSInterface;
 	private var jsxEvent:JsxEvent;
-	private var isCreatedNewLayer:Bool;
-	private static inline var INSTANCE_NAME = "pixelOutline";
-	
-	private var event:PixelOutlineRunnerEvent;
+	private var frame1offset:Bool;
+	private var ignoredFrame1Output:Bool;
 
-	public function getEvent():PixelOutlineRunnerEvent
+	private static inline var INSTANCE_NAME = "frameAnimationExport";
+	
+	private var event:FrameAnimationExporterEvent;
+
+	public function getEvent():FrameAnimationExporterEvent
 	{
 		var n = event;
-		event = PixelOutlineRunnerEvent.NONE;
+		event = FrameAnimationExporterEvent.NONE;
 		return n;
 	}
 
@@ -39,13 +41,14 @@ class PixelOutlineRunner
 		mainFunction();
 	}
 
-	public function call(isCreatedNewLayer:Bool)
+	public function call(frame1offset:Bool, ignoredFrame1Output:Bool)
 	{
-		this.isCreatedNewLayer = isCreatedNewLayer;
-		event = PixelOutlineRunnerEvent.NONE;
+		this.frame1offset = frame1offset;
+		this.ignoredFrame1Output = ignoredFrame1Output;
+		event = FrameAnimationExporterEvent.NONE;
 
 		jsxEvent = JsxEvent.NONE;
-		csInterface.evalScript('var $INSTANCE_NAME = new ${ClassName.PIXEL_OUTLINE}();');
+		csInterface.evalScript('var $INSTANCE_NAME = new ${ClassName.FRAME_ANIMATION_EXPORT}();');
 		csInterface.evalScript('$INSTANCE_NAME.getInitialErrorEvent();', function(result){
 			jsxEvent = JsxEvent.GOTTEN(result);
 		});
@@ -61,7 +64,7 @@ class PixelOutlineRunner
 				switch(initialErrorEvent)
 				{
 					case FrameAnimationExportInitialErrorEvent.ERROR(error):
-						destroy(PixelOutlineRunnerEvent.INITIAL_ERROR_EVENT(error));
+						destroy(FrameAnimationExporterEvent.INITIAL_ERROR_EVENT(error));
 					case FrameAnimationExportInitialErrorEvent.NONE:
 						execute();
 				}
@@ -69,9 +72,10 @@ class PixelOutlineRunner
 	}
 	private function execute()
 	{
-		var data = Serializer.run(isCreatedNewLayer);
-		csInterface.evalScript('$INSTANCE_NAME.execute("$data");');
-		destroy(PixelOutlineRunnerEvent.SUCCESS);
+		var frame1offsetData = Serializer.run(frame1offset);
+		var ignoredFrame1OutputData = Serializer.run(ignoredFrame1Output);
+		csInterface.evalScript('$INSTANCE_NAME.execute($frame1offsetData, $ignoredFrame1OutputData);');
+		destroy(FrameAnimationExporterEvent.SUCCESS);
 	}
 	private function recieveJsxEvent():JsxEvent
 	{
@@ -79,7 +83,7 @@ class PixelOutlineRunner
 		jsxEvent = JsxEvent.NONE;
 		return n;
 	}
-	private function destroy(event:PixelOutlineRunnerEvent)
+	private function destroy(event:FrameAnimationExporterEvent)
 	{
 		this.event = event;
 		mainFunction = finish;

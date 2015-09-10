@@ -294,6 +294,79 @@ extension.AbstractCSInterface.prototype = {
 	}
 	,__class__: extension.AbstractCSInterface
 };
+extension.FrameAnimationExporterEvent = $hxClasses["extension.FrameAnimationExporterEvent"] = { __ename__ : ["extension","FrameAnimationExporterEvent"], __constructs__ : ["INITIAL_ERROR_EVENT","SUCCESS","NONE"] };
+extension.FrameAnimationExporterEvent.INITIAL_ERROR_EVENT = function(error) { var $x = ["INITIAL_ERROR_EVENT",0,error]; $x.__enum__ = extension.FrameAnimationExporterEvent; return $x; };
+extension.FrameAnimationExporterEvent.SUCCESS = ["SUCCESS",1];
+extension.FrameAnimationExporterEvent.SUCCESS.__enum__ = extension.FrameAnimationExporterEvent;
+extension.FrameAnimationExporterEvent.NONE = ["NONE",2];
+extension.FrameAnimationExporterEvent.NONE.__enum__ = extension.FrameAnimationExporterEvent;
+extension.FrameAnimationExporter = function() {
+	this.csInterface = extension.AbstractCSInterface.create();
+};
+$hxClasses["extension.FrameAnimationExporter"] = extension.FrameAnimationExporter;
+extension.FrameAnimationExporter.__name__ = ["extension","FrameAnimationExporter"];
+extension.FrameAnimationExporter.prototype = {
+	getEvent: function() {
+		var n = this.event;
+		this.event = extension.FrameAnimationExporterEvent.NONE;
+		return n;
+	}
+	,run: function() {
+		this.mainFunction();
+	}
+	,call: function(frame1offset,ignoredFrame1Output) {
+		var _g = this;
+		this.frame1offset = frame1offset;
+		this.ignoredFrame1Output = ignoredFrame1Output;
+		this.event = extension.FrameAnimationExporterEvent.NONE;
+		this.jsxEvent = common.JsxEvent.NONE;
+		this.csInterface.evalScript("var " + "frameAnimationExport" + " = new " + "FrameAnimationExport" + "();");
+		this.csInterface.evalScript("" + "frameAnimationExport" + ".getInitialErrorEvent();",function(result) {
+			_g.jsxEvent = common.JsxEvent.GOTTEN(result);
+		});
+		this.mainFunction = $bind(this,this.observeToRecieveInitialErrorEvent);
+	}
+	,observeToRecieveInitialErrorEvent: function() {
+		{
+			var _g = this.recieveJsxEvent();
+			switch(_g[1]) {
+			case 0:
+				return;
+			case 1:
+				var serializedEvent = _g[2];
+				var initialErrorEvent = haxe.Unserializer.run(serializedEvent);
+				switch(initialErrorEvent[1]) {
+				case 1:
+					var error = initialErrorEvent[2];
+					this.destroy(extension.FrameAnimationExporterEvent.INITIAL_ERROR_EVENT(error));
+					break;
+				case 0:
+					this.execute();
+					break;
+				}
+				break;
+			}
+		}
+	}
+	,execute: function() {
+		var frame1offsetData = haxe.Serializer.run(this.frame1offset);
+		var ignoredFrame1OutputData = haxe.Serializer.run(this.ignoredFrame1Output);
+		this.csInterface.evalScript("" + "frameAnimationExport" + ".execute(" + frame1offsetData + ", " + ignoredFrame1OutputData + ");");
+		this.destroy(extension.FrameAnimationExporterEvent.SUCCESS);
+	}
+	,recieveJsxEvent: function() {
+		var n = this.jsxEvent;
+		this.jsxEvent = common.JsxEvent.NONE;
+		return n;
+	}
+	,destroy: function(event) {
+		this.event = event;
+		this.mainFunction = $bind(this,this.finish);
+	}
+	,finish: function() {
+	}
+	,__class__: extension.FrameAnimationExporter
+};
 extension.JsxLoader = function() {
 	this.csInterface = extension.AbstractCSInterface.create();
 	this.loadIndex = 0;
@@ -341,7 +414,7 @@ extension.Panel.prototype = {
 	initialize: function(event) {
 		this.csInterface = extension.AbstractCSInterface.create();
 		this.jsxLoader = new extension.JsxLoader();
-		this.pixelOutlineRunner = new extension.PixelOutlineRunner();
+		this.frameAnimationExporter = new extension.FrameAnimationExporter();
 		if(extension.View.instance == null) this.view = extension.View.instance = new extension.View(); else this.view = extension.View.instance;
 		this.startRunning($bind(this,this.loadJsx),50);
 	}
@@ -368,15 +441,15 @@ extension.Panel.prototype = {
 		this.changeRunning($bind(this,this.observeToClickUI),250);
 	}
 	,observeToClickUI: function() {
-		if(this.view.runButton.isClicked()) this.initializeToCallPixelOutline(false); else if(this.view.runNewLayerButton.isClicked()) this.initializeToCallPixelOutline(true);
+		if(this.view.runButton.isClicked()) this.initializeToCallFrameAnimationExport(false); else if(this.view.runFrame1OffsetButton.isClicked()) this.initializeToCallFrameAnimationExport(true);
 	}
-	,initializeToCallPixelOutline: function(isCreatedNewLayer) {
-		this.pixelOutlineRunner.call(isCreatedNewLayer);
-		this.changeRunning($bind(this,this.callPixelOutline),50);
+	,initializeToCallFrameAnimationExport: function(frame1offset) {
+		this.frameAnimationExporter.call(frame1offset,this.view.isIgnoredFrame1Output());
+		this.changeRunning($bind(this,this.callFrameAnimationExport),50);
 	}
-	,callPixelOutline: function() {
-		this.pixelOutlineRunner.run();
-		var event = this.pixelOutlineRunner.getEvent();
+	,callFrameAnimationExport: function() {
+		this.frameAnimationExporter.run();
+		var event = this.frameAnimationExporter.getEvent();
 		switch(event[1]) {
 		case 2:
 			return;
@@ -392,81 +465,10 @@ extension.Panel.prototype = {
 	}
 	,__class__: extension.Panel
 };
-extension.PixelOutlineRunnerEvent = $hxClasses["extension.PixelOutlineRunnerEvent"] = { __ename__ : ["extension","PixelOutlineRunnerEvent"], __constructs__ : ["INITIAL_ERROR_EVENT","SUCCESS","NONE"] };
-extension.PixelOutlineRunnerEvent.INITIAL_ERROR_EVENT = function(error) { var $x = ["INITIAL_ERROR_EVENT",0,error]; $x.__enum__ = extension.PixelOutlineRunnerEvent; return $x; };
-extension.PixelOutlineRunnerEvent.SUCCESS = ["SUCCESS",1];
-extension.PixelOutlineRunnerEvent.SUCCESS.__enum__ = extension.PixelOutlineRunnerEvent;
-extension.PixelOutlineRunnerEvent.NONE = ["NONE",2];
-extension.PixelOutlineRunnerEvent.NONE.__enum__ = extension.PixelOutlineRunnerEvent;
-extension.PixelOutlineRunner = function() {
-	this.csInterface = extension.AbstractCSInterface.create();
-};
-$hxClasses["extension.PixelOutlineRunner"] = extension.PixelOutlineRunner;
-extension.PixelOutlineRunner.__name__ = ["extension","PixelOutlineRunner"];
-extension.PixelOutlineRunner.prototype = {
-	getEvent: function() {
-		var n = this.event;
-		this.event = extension.PixelOutlineRunnerEvent.NONE;
-		return n;
-	}
-	,run: function() {
-		this.mainFunction();
-	}
-	,call: function(isCreatedNewLayer) {
-		var _g = this;
-		this.isCreatedNewLayer = isCreatedNewLayer;
-		this.event = extension.PixelOutlineRunnerEvent.NONE;
-		this.jsxEvent = common.JsxEvent.NONE;
-		this.csInterface.evalScript("var " + "pixelOutline" + " = new " + "PixelOutline" + "();");
-		this.csInterface.evalScript("" + "pixelOutline" + ".getInitialErrorEvent();",function(result) {
-			_g.jsxEvent = common.JsxEvent.GOTTEN(result);
-		});
-		this.mainFunction = $bind(this,this.observeToRecieveInitialErrorEvent);
-	}
-	,observeToRecieveInitialErrorEvent: function() {
-		{
-			var _g = this.recieveJsxEvent();
-			switch(_g[1]) {
-			case 0:
-				return;
-			case 1:
-				var serializedEvent = _g[2];
-				var initialErrorEvent = haxe.Unserializer.run(serializedEvent);
-				switch(initialErrorEvent[1]) {
-				case 1:
-					var error = initialErrorEvent[2];
-					this.destroy(extension.PixelOutlineRunnerEvent.INITIAL_ERROR_EVENT(error));
-					break;
-				case 0:
-					this.execute();
-					break;
-				}
-				break;
-			}
-		}
-	}
-	,execute: function() {
-		var data = haxe.Serializer.run(this.isCreatedNewLayer);
-		this.csInterface.evalScript("" + "pixelOutline" + ".execute(\"" + data + "\");");
-		this.destroy(extension.PixelOutlineRunnerEvent.SUCCESS);
-	}
-	,recieveJsxEvent: function() {
-		var n = this.jsxEvent;
-		this.jsxEvent = common.JsxEvent.NONE;
-		return n;
-	}
-	,destroy: function(event) {
-		this.event = event;
-		this.mainFunction = $bind(this,this.finish);
-	}
-	,finish: function() {
-	}
-	,__class__: extension.PixelOutlineRunner
-};
 extension.View = function() {
-	this.element = new $("#pixel_outline_runner");
+	this.element = new $("#container");
 	this.runButton = new extension.parts.Button(this.element,"run_button");
-	this.runNewLayerButton = new extension.parts.Button(this.element,"run_new_layer_button");
+	this.runFrame1OffsetButton = new extension.parts.Button(this.element,"run_frame1_offset_button");
 };
 $hxClasses["extension.View"] = extension.View;
 extension.View.__name__ = ["extension","View"];
@@ -474,7 +476,13 @@ extension.View.get_instance = function() {
 	if(extension.View.instance == null) return extension.View.instance = new extension.View(); else return extension.View.instance;
 };
 extension.View.prototype = {
-	__class__: extension.View
+	isIgnoredFrame1Output: function() {
+		return this.isChecked("ignored_frame1_output");
+	}
+	,isChecked: function(className) {
+		return new $("." + className,this.element)["is"](":checked");
+	}
+	,__class__: extension.View
 };
 extension.parts = {};
 extension.parts.Button = function(parentElement,className) {
@@ -502,17 +510,6 @@ extension.parts.Button.prototype = {
 		return this.element.attr("disabled") != null;
 	}
 	,__class__: extension.parts.Button
-};
-extension.parts.TitleBar = function(titleBarId,slideElement) {
-	var titleElement = new $("#" + titleBarId);
-	titleElement.mousedown(function(event) {
-		if(slideElement["is"](":hidden")) slideElement.slideDown("fast"); else slideElement.slideUp("fast");
-	});
-};
-$hxClasses["extension.parts.TitleBar"] = extension.parts.TitleBar;
-extension.parts.TitleBar.__name__ = ["extension","parts","TitleBar"];
-extension.parts.TitleBar.prototype = {
-	__class__: extension.parts.TitleBar
 };
 var haxe = {};
 haxe.Serializer = function() {
@@ -1324,15 +1321,14 @@ adobe.cep._ScaleFactor.ScaleFactor_Impl_.NORMAL = 1;
 adobe.cep._ScaleFactor.ScaleFactor_Impl_.HiDPI = 2;
 adobe.cep._UIColorType.UIColorType_Impl_.RGB = 1;
 adobe.cep._UIColorType.UIColorType_Impl_.GRADATION = 2;
-common.ClassName.PIXEL_OUTLINE = "PixelOutline";
+common.ClassName.FRAME_ANIMATION_EXPORT = "FrameAnimationExport";
 common._FrameAnimationExportInitialErrorEvent.FrameAnimationExportInitialError_Impl_.UNOPENED_DOCUMENT = "Unopened document.";
+extension.FrameAnimationExporter.INSTANCE_NAME = "frameAnimationExport";
 extension.JsxLoader.JSX_DIRECTORY = "/jsx/";
 extension.JsxLoader.JSX_EXTENSION = ".jsx";
-extension.JsxLoader.LOAD_JSX_SET = ["PixelOutline"];
+extension.JsxLoader.LOAD_JSX_SET = ["FrameAnimationExport"];
 extension.Panel.TIMER_SPEED_CALM = 250;
 extension.Panel.TIMER_SPEED_RUNNING = 50;
-extension.PixelOutlineRunner.INSTANCE_NAME = "pixelOutline";
-extension.parts.TitleBar.SLIDE_SPEED = "fast";
 haxe.Serializer.USE_CACHE = false;
 haxe.Serializer.USE_ENUM_INDEX = false;
 haxe.Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";

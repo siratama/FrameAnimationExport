@@ -3,7 +3,7 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>PixelOutline</title>
+	<title>FrameAnimationExport</title>
 	<link rel="stylesheet" type="text/css" href="./css/index.css">
 
 	<script src="./js/CSInterface-4.0.0.js"></script>
@@ -15,14 +15,18 @@
 
 <div id="container">
 
-	<div id="pixel_outline_runner">
-		<div>
-			<button class="run_button" title="start to stroke pixel outline">RUN</button>
-		</div>
-		<div>
-			<button class="run_new_layer_button" title="start to stroke pixel outline">RUN <span class="note">(new layer)</span></button>
-		</div>
-	</div>
+    <div class="normal">
+        <button class="run_button">RUN</button>
+    </div>
+    <hr />
+    <div class="frame1_offset">
+        <div>
+            <button class="run_frame1_offset_button">RUN (frame1 offset)</button>
+        </div>
+        <div class="option">
+            <input type="checkbox" class="ignored_frame1_output" checked="checked" /> Ignored frame1 output.
+        </div>
+    </div>
 
 </div>
 
