@@ -38,8 +38,11 @@ class FrameAnimationExport
 		//FrameAnimationExportJSXRunner.execute(true, true); //test
 		#end
 	}
-	public function new(frame1offset:Bool, ignoredFrame1Output:Bool)
+	public function new(frame1offsetData:String, ignoredFrame1OutputData:String)
 	{
+		var ignoredFrame1Output:Bool = Unserializer.run(ignoredFrame1OutputData);
+		var frame1offset:Bool = Unserializer.run(frame1offsetData);
+
 		if(!frame1offset && ignoredFrame1Output){
 			js.Lib.alert("parameter error");
 		}
@@ -70,7 +73,12 @@ class FrameAnimationExport
 		switch(DirectoryCreation.execute())
 		{
 			case DirectoryCreationEvent.ERROR(error):
-				js.Lib.alert(error);
+				switch(error){
+					case DirectoryCreationError.FOLDER_SELECTION_ERROR: return;
+					case _: js.Lib.alert(error);
+				}
+				//js.Lib.alert(error);
+
 			case DirectoryCreationEvent.SUCCESS:
 				parse();
 		}
@@ -132,7 +140,9 @@ private class FrameAnimationExportJSXRunner
 {
 	public static function execute(frame1offset:Bool, ignoredFrame1Output:Bool)
 	{
-		var frameAnimationExport = new FrameAnimationExport(frame1offset, ignoredFrame1Output);
+		var frame1offsetData = Serializer.run(frame1offset);
+		var ignoredFrame1OutputData = Serializer.run(ignoredFrame1Output);
+		var frameAnimationExport = new FrameAnimationExport(frame1offsetData, ignoredFrame1OutputData);
 		var errorEvent:FrameAnimationExportInitialErrorEvent = Unserializer.run(frameAnimationExport.getInitialErrorEvent());
 		switch(errorEvent)
 		{

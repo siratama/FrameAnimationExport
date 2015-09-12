@@ -1409,7 +1409,9 @@ js.Lib.__name__ = ["js","Lib"];
 js.Lib.alert = function(v) {
 	alert(js.Boot.__string_rec(v,""));
 };
-var FrameAnimationExport = $hxClasses["FrameAnimationExport"] = function(frame1offset,ignoredFrame1Output) {
+var FrameAnimationExport = $hxClasses["FrameAnimationExport"] = function(frame1offsetData,ignoredFrame1OutputData) {
+	var ignoredFrame1Output = haxe.Unserializer.run(ignoredFrame1OutputData);
+	var frame1offset = haxe.Unserializer.run(frame1offsetData);
 	if(!frame1offset && ignoredFrame1Output) js.Lib.alert("parameter error");
 	(jsx.OptionalParameter.instance == null?jsx.OptionalParameter.instance = new jsx.OptionalParameter():jsx.OptionalParameter.instance).set(frame1offset,ignoredFrame1Output);
 	this.application = psd.Lib.app;
@@ -1436,7 +1438,12 @@ FrameAnimationExport.prototype = {
 			switch(_g[1]) {
 			case 0:
 				var error = _g[2];
-				js.Lib.alert(error);
+				switch(error) {
+				case "Folder selection error.":
+					return;
+				default:
+					js.Lib.alert(error);
+				}
 				break;
 			case 1:
 				this.parse();
@@ -1479,7 +1486,9 @@ if(!jsx._FrameAnimationExport) jsx._FrameAnimationExport = {};
 jsx._FrameAnimationExport.FrameAnimationExportJSXRunner = $hxClasses["jsx._FrameAnimationExport.FrameAnimationExportJSXRunner"] = function() { };
 jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.__name__ = ["jsx","_FrameAnimationExport","FrameAnimationExportJSXRunner"];
 jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute = function(frame1offset,ignoredFrame1Output) {
-	var frameAnimationExport = new FrameAnimationExport(frame1offset,ignoredFrame1Output);
+	var frame1offsetData = haxe.Serializer.run(frame1offset);
+	var ignoredFrame1OutputData = haxe.Serializer.run(ignoredFrame1Output);
+	var frameAnimationExport = new FrameAnimationExport(frame1offsetData,ignoredFrame1OutputData);
 	var errorEvent = haxe.Unserializer.run(frameAnimationExport.getInitialErrorEvent());
 	switch(errorEvent[1]) {
 	case 1:

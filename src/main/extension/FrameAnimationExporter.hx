@@ -18,8 +18,6 @@ class FrameAnimationExporter
 	private var mainFunction:Void->Void;
 	private var csInterface:AbstractCSInterface;
 	private var jsxEvent:JsxEvent;
-	private var frame1offset:Bool;
-	private var ignoredFrame1Output:Bool;
 
 	private static inline var INSTANCE_NAME = "frameAnimationExport";
 	
@@ -43,12 +41,14 @@ class FrameAnimationExporter
 
 	public function call(frame1offset:Bool, ignoredFrame1Output:Bool)
 	{
-		this.frame1offset = frame1offset;
-		this.ignoredFrame1Output = ignoredFrame1Output;
 		event = FrameAnimationExporterEvent.NONE;
 
 		jsxEvent = JsxEvent.NONE;
-		csInterface.evalScript('var $INSTANCE_NAME = new ${ClassName.FRAME_ANIMATION_EXPORT}();');
+
+		var frame1offsetData = Serializer.run(frame1offset);
+		var ignoredFrame1OutputData = Serializer.run(ignoredFrame1Output);
+		csInterface.evalScript('var $INSTANCE_NAME = new ${ClassName.FRAME_ANIMATION_EXPORT}("$frame1offsetData", "$ignoredFrame1OutputData");');
+
 		csInterface.evalScript('$INSTANCE_NAME.getInitialErrorEvent();', function(result){
 			jsxEvent = JsxEvent.GOTTEN(result);
 		});
@@ -60,6 +60,7 @@ class FrameAnimationExporter
 		{
 			case JsxEvent.NONE: return;
 			case JsxEvent.GOTTEN(serializedEvent):
+
 				var initialErrorEvent:FrameAnimationExportInitialErrorEvent = Unserializer.run(serializedEvent);
 				switch(initialErrorEvent)
 				{
@@ -72,9 +73,7 @@ class FrameAnimationExporter
 	}
 	private function execute()
 	{
-		var frame1offsetData = Serializer.run(frame1offset);
-		var ignoredFrame1OutputData = Serializer.run(ignoredFrame1Output);
-		csInterface.evalScript('$INSTANCE_NAME.execute($frame1offsetData, $ignoredFrame1OutputData);');
+		csInterface.evalScript('$INSTANCE_NAME.execute();');
 		destroy(FrameAnimationExporterEvent.SUCCESS);
 	}
 	private function recieveJsxEvent():JsxEvent

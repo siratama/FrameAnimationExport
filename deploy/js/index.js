@@ -316,11 +316,11 @@ extension.FrameAnimationExporter.prototype = {
 	}
 	,call: function(frame1offset,ignoredFrame1Output) {
 		var _g = this;
-		this.frame1offset = frame1offset;
-		this.ignoredFrame1Output = ignoredFrame1Output;
 		this.event = extension.FrameAnimationExporterEvent.NONE;
 		this.jsxEvent = common.JsxEvent.NONE;
-		this.csInterface.evalScript("var " + "frameAnimationExport" + " = new " + "FrameAnimationExport" + "();");
+		var frame1offsetData = haxe.Serializer.run(frame1offset);
+		var ignoredFrame1OutputData = haxe.Serializer.run(ignoredFrame1Output);
+		this.csInterface.evalScript("var " + "frameAnimationExport" + " = new " + "FrameAnimationExport" + "(\"" + frame1offsetData + "\", \"" + ignoredFrame1OutputData + "\");");
 		this.csInterface.evalScript("" + "frameAnimationExport" + ".getInitialErrorEvent();",function(result) {
 			_g.jsxEvent = common.JsxEvent.GOTTEN(result);
 		});
@@ -349,9 +349,7 @@ extension.FrameAnimationExporter.prototype = {
 		}
 	}
 	,execute: function() {
-		var frame1offsetData = haxe.Serializer.run(this.frame1offset);
-		var ignoredFrame1OutputData = haxe.Serializer.run(this.ignoredFrame1Output);
-		this.csInterface.evalScript("" + "frameAnimationExport" + ".execute(" + frame1offsetData + ", " + ignoredFrame1OutputData + ");");
+		this.csInterface.evalScript("" + "frameAnimationExport" + ".execute();");
 		this.destroy(extension.FrameAnimationExporterEvent.SUCCESS);
 	}
 	,recieveJsxEvent: function() {
@@ -444,7 +442,9 @@ extension.Panel.prototype = {
 		if(this.view.runButton.isClicked()) this.initializeToCallFrameAnimationExport(false); else if(this.view.runFrame1OffsetButton.isClicked()) this.initializeToCallFrameAnimationExport(true);
 	}
 	,initializeToCallFrameAnimationExport: function(frame1offset) {
-		this.frameAnimationExporter.call(frame1offset,this.view.isIgnoredFrame1Output());
+		var ignoredFrame1Output;
+		if(!frame1offset) ignoredFrame1Output = false; else ignoredFrame1Output = this.view.isIgnoredFrame1Output();
+		this.frameAnimationExporter.call(frame1offset,ignoredFrame1Output);
 		this.changeRunning($bind(this,this.callFrameAnimationExport),50);
 	}
 	,callFrameAnimationExport: function() {
