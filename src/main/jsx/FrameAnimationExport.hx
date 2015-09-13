@@ -1,5 +1,6 @@
 package jsx;
 
+import lib.FileDirectory;
 import jsx.parser.layer.LayerStructures;
 import lib.Information;
 import jsx.parser.directory.DirectoryStructure;
@@ -93,8 +94,13 @@ class FrameAnimationExport
 		directoryStructure = new DirectoryStructure();
 		directoryStructure.parse(layerStructures.imagePathMap);
 
+		//aaa.psd -> aaa
+		//aaa.bbb.psd -> aaa.bbb
+		//aaa -> aaa
+		var arr = activeDocument.name.split(".");
+		if(arr.length > 1) arr.pop();
 		information = {
-			filename:activeDocument.name
+			filename:arr.join(".")
 		};
 
 		output();

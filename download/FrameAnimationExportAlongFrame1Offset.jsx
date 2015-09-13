@@ -1456,7 +1456,9 @@ FrameAnimationExport.prototype = {
 		this.layerStructures.parse();
 		this.directoryStructure = new jsx.parser.directory.DirectoryStructure();
 		this.directoryStructure.parse(this.layerStructures.imagePathMap);
-		this.information = { filename : this.activeDocument.name};
+		var arr = this.activeDocument.name.split(".");
+		if(arr.length > 1) arr.pop();
+		this.information = { filename : arr.join(".")};
 		this.output();
 	}
 	,output: function() {
@@ -2293,6 +2295,7 @@ lib.FileDirectory.ROOT_DIRECTORY = "";
 lib.FileDirectory.PATH_COLUMN = "/";
 lib.FileDirectory.IMAGE_EXTENSION = ".png";
 lib.FileDirectory.JSON_EXTENSION = ".json";
+lib.FileDirectory.PSD_EXTENSION = ".psd";
 lib.FileDirectory.OUTPUT_DIRECTORY = "frame_animation_export";
 lib.FileDirectory.ASSETS_DIRECTORY = "assets";
 lib.FileDirectory.JSON_DIRECTORY = "json";
