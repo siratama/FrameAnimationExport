@@ -20,6 +20,9 @@ class View
 	public function isIgnoredFrame1Output():Bool{
 		return isChecked("ignored_frame1_output");
 	}
+	public function sameNameLayerIsIdentical():Bool{
+		return isChecked("same_name_layer_is_identical");
+	}
 	private function isChecked(className:String):Bool{
 		return new JQuery('.$className', element).is(":checked");
 	}

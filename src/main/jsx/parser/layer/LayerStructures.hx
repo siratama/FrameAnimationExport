@@ -8,7 +8,7 @@ class LayerStructures
 	private var document:Document;
 
 	public var set(default, null):Array<LayerStructure>;
-	public var imagePathMap(default, null):Map<String, LayerData>;
+	public var imagePathMap(default, null):Map<String, LayerProperty>;
 	public var photoshopLayerSets(default, null):Array<Array<PhotoshopLayer>>;
 	public var usedPathSet(default, null):Array<String>;
 
@@ -21,7 +21,8 @@ class LayerStructures
 	}
 	public function parse()
 	{
-		renameSameNameLayer();
+		if(!OptionalParameter.instance.sameNameLayerIsIdentical)
+			renameSameNameLayer();
 
 		if(PrivateAPI.timelineAnimationFrameExists())
 			parseAllFrames();
@@ -36,7 +37,9 @@ class LayerStructures
 		createImagePathMap();
 		createPhotoshopLayerSets();
 		createUsedPathSet();
-		renameToOriginalName();
+
+		if(!OptionalParameter.instance.sameNameLayerIsIdentical)
+			renameToOriginalName();
 	}
 	private function parseAllFrames()
 	{

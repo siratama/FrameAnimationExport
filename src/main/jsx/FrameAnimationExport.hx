@@ -4,7 +4,7 @@ import lib.FileDirectory;
 import jsx.parser.layer.LayerStructures;
 import lib.Information;
 import jsx.parser.directory.DirectoryStructure;
-import jsx.parser.layer.LayerData;
+import jsx.parser.layer.LayerProperty;
 import jsx.output.DirectoryCreation;
 import jsx.output.ImageExport;
 import jsx.output.DirectoryCreation.DirectoryCreationEvent;
@@ -33,22 +33,19 @@ class FrameAnimationExport
 	public static function main()
 	{
 		#if jsx
-		FrameAnimationExportJSXRunner.execute(false, false);
+		FrameAnimationExportJSXRunner.execute(false, false, false);
 		#elseif jsx_offset
-		FrameAnimationExportJSXRunner.execute(true, false);
-		//FrameAnimationExportJSXRunner.execute(true, true); //test
+		FrameAnimationExportJSXRunner.execute(true, false, false);
+		//FrameAnimationExportJSXRunner.execute(true, false, true); //test
 		#end
 	}
-	public function new(frame1offsetData:String, ignoredFrame1OutputData:String)
+	public function new(frame1offsetData:String, ignoredFrame1OutputData:String, sameNameLayerIsIdenticalData:String)
 	{
 		var ignoredFrame1Output:Bool = Unserializer.run(ignoredFrame1OutputData);
 		var frame1offset:Bool = Unserializer.run(frame1offsetData);
+		var sameNameLayerIsIdentical:Bool = Unserializer.run(sameNameLayerIsIdenticalData);
 
-		if(!frame1offset && ignoredFrame1Output){
-			js.Lib.alert("parameter error");
-		}
-
-		OptionalParameter.instance.set(frame1offset, ignoredFrame1Output);
+		OptionalParameter.instance.set(frame1offset, ignoredFrame1Output, sameNameLayerIsIdentical);
 		application = app;
 	}
 	public function getInitialErrorEvent():String
@@ -135,8 +132,8 @@ class FrameAnimationExport
 		psd.Lib.preferences.rulerUnits = Units.PIXELS;
 		for (key in layerStructures.imagePathMap.keys())
 		{
-			var layerData:LayerData = layerStructures.imagePathMap[key];
-			var outputImage = new ImageExport(application, layerData);
+			var layerProperty:LayerProperty = layerStructures.imagePathMap[key];
+			var outputImage = new ImageExport(application, layerProperty);
 			outputImage.execute();
 		}
 		activeDocument.selection.deselect();
@@ -144,11 +141,13 @@ class FrameAnimationExport
 }
 private class FrameAnimationExportJSXRunner
 {
-	public static function execute(frame1offset:Bool, ignoredFrame1Output:Bool)
+	public static function execute(frame1offset:Bool, ignoredFrame1Output:Bool, sameNameLayerIsIdentical:Bool)
 	{
 		var frame1offsetData = Serializer.run(frame1offset);
 		var ignoredFrame1OutputData = Serializer.run(ignoredFrame1Output);
-		var frameAnimationExport = new FrameAnimationExport(frame1offsetData, ignoredFrame1OutputData);
+		var sameNameLayerIsIdenticalData = Serializer.run(sameNameLayerIsIdentical);
+
+		var frameAnimationExport = new FrameAnimationExport(frame1offsetData, ignoredFrame1OutputData, sameNameLayerIsIdenticalData);
 		var errorEvent:FrameAnimationExportInitialErrorEvent = Unserializer.run(frameAnimationExport.getInitialErrorEvent());
 		switch(errorEvent)
 		{

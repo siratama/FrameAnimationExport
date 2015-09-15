@@ -5,7 +5,7 @@ import jsx.json_convertion.info.PhotoshopInfomationToJsonConverter;
 import lib.Information;
 import jsx.parser.directory.DirectoryData;
 import lib.PhotoshopLayer;
-import jsx.parser.layer.LayerData;
+import jsx.parser.layer.LayerProperty;
 import jsx.json_convertion.directory.DirectoryStructureToJsonConverter;
 import jsx.json_convertion.layer.LayerStructueToJsonConverter;
 import lib.FileDirectory;

@@ -1,5 +1,5 @@
 package jsx.parser.directory;
-import jsx.parser.layer.LayerData;
+import jsx.parser.layer.LayerProperty;
 class DirectoryStructure
 {
 	public var rootDirectoryData(default, null):DirectoryData;
@@ -7,12 +7,12 @@ class DirectoryStructure
 	{
 		rootDirectoryData = new DirectoryData();
 	}
-	public function parse(imagePathMap:Map<String, LayerData>)
+	public function parse(imagePathMap:Map<String, LayerProperty>)
 	{
 		for(key in imagePathMap.keys())
 		{
 			var directoryData = rootDirectoryData;
-			var layerData:LayerData = imagePathMap[key];
+			var layerData:LayerProperty = imagePathMap[key];
 			var directoryPath = layerData.directoryPath.copy();
 
 			if(directoryPath.length == 0){

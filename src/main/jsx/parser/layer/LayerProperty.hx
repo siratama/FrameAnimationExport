@@ -7,7 +7,7 @@ import psd.Layer;
 import jsx.util.Bounds;
 using jsx.util.Bounds;
 
-class LayerData
+class LayerProperty
 {
 	public var bounds(default, null):Bounds;
 	private var opacity:Int;

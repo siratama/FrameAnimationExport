@@ -39,15 +39,16 @@ class FrameAnimationExporter
 		mainFunction();
 	}
 
-	public function call(frame1offset:Bool, ignoredFrame1Output:Bool)
+	public function call(frame1offset:Bool, ignoredFrame1Output:Bool, sameNameLayerIsIdentical:Bool)
 	{
 		event = FrameAnimationExporterEvent.NONE;
-
 		jsxEvent = JsxEvent.NONE;
 
 		var frame1offsetData = Serializer.run(frame1offset);
 		var ignoredFrame1OutputData = Serializer.run(ignoredFrame1Output);
-		csInterface.evalScript('var $INSTANCE_NAME = new ${ClassName.FRAME_ANIMATION_EXPORT}("$frame1offsetData", "$ignoredFrame1OutputData");');
+		var sameNameLayerIsIdenticalData = Serializer.run(sameNameLayerIsIdentical);
+
+		csInterface.evalScript('var $INSTANCE_NAME = new ${ClassName.FRAME_ANIMATION_EXPORT}("$frame1offsetData", "$ignoredFrame1OutputData", "$sameNameLayerIsIdenticalData");');
 
 		csInterface.evalScript('$INSTANCE_NAME.getInitialErrorEvent();', function(result){
 			jsxEvent = JsxEvent.GOTTEN(result);

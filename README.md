@@ -29,3 +29,4 @@ Photoshop CC 拡張パネル用ファイルです。
 ## Wanted information
 
 [https://forums.adobe.com/thread/1936025](https://forums.adobe.com/thread/1936025)
+

@@ -2,7 +2,7 @@ package jsx.json_convertion.directory;
 import haxe.Template;
 import jsx.parser.directory.DirectoryData;
 import lib.Directory;
-import jsx.parser.layer.LayerData;
+import jsx.parser.layer.LayerProperty;
 class DirectoryStructureToJsonConverter
 {
 	/*

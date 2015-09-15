@@ -314,13 +314,14 @@ extension.FrameAnimationExporter.prototype = {
 	,run: function() {
 		this.mainFunction();
 	}
-	,call: function(frame1offset,ignoredFrame1Output) {
+	,call: function(frame1offset,ignoredFrame1Output,sameNameLayerIsIdentical) {
 		var _g = this;
 		this.event = extension.FrameAnimationExporterEvent.NONE;
 		this.jsxEvent = common.JsxEvent.NONE;
 		var frame1offsetData = haxe.Serializer.run(frame1offset);
 		var ignoredFrame1OutputData = haxe.Serializer.run(ignoredFrame1Output);
-		this.csInterface.evalScript("var " + "frameAnimationExport" + " = new " + "FrameAnimationExport" + "(\"" + frame1offsetData + "\", \"" + ignoredFrame1OutputData + "\");");
+		var sameNameLayerIsIdenticalData = haxe.Serializer.run(sameNameLayerIsIdentical);
+		this.csInterface.evalScript("var " + "frameAnimationExport" + " = new " + "FrameAnimationExport" + "(\"" + frame1offsetData + "\", \"" + ignoredFrame1OutputData + "\", \"" + sameNameLayerIsIdenticalData + "\");");
 		this.csInterface.evalScript("" + "frameAnimationExport" + ".getInitialErrorEvent();",function(result) {
 			_g.jsxEvent = common.JsxEvent.GOTTEN(result);
 		});
@@ -442,9 +443,7 @@ extension.Panel.prototype = {
 		if(this.view.runButton.isClicked()) this.initializeToCallFrameAnimationExport(false); else if(this.view.runFrame1OffsetButton.isClicked()) this.initializeToCallFrameAnimationExport(true);
 	}
 	,initializeToCallFrameAnimationExport: function(frame1offset) {
-		var ignoredFrame1Output;
-		if(!frame1offset) ignoredFrame1Output = false; else ignoredFrame1Output = this.view.isIgnoredFrame1Output();
-		this.frameAnimationExporter.call(frame1offset,ignoredFrame1Output);
+		this.frameAnimationExporter.call(frame1offset,this.view.isIgnoredFrame1Output(),this.view.sameNameLayerIsIdentical());
 		this.changeRunning($bind(this,this.callFrameAnimationExport),50);
 	}
 	,callFrameAnimationExport: function() {
@@ -478,6 +477,9 @@ extension.View.get_instance = function() {
 extension.View.prototype = {
 	isIgnoredFrame1Output: function() {
 		return this.isChecked("ignored_frame1_output");
+	}
+	,sameNameLayerIsIdentical: function() {
+		return this.isChecked("same_name_layer_is_identical");
 	}
 	,isChecked: function(className) {
 		return new $("." + className,this.element)["is"](":checked");

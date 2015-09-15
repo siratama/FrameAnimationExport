@@ -74,9 +74,7 @@ class Panel
 	}
 	private function initializeToCallFrameAnimationExport(frame1offset:Bool)
 	{
-		var ignoredFrame1Output:Bool = (!frame1offset) ? false: view.isIgnoredFrame1Output();
-
-		frameAnimationExporter.call(frame1offset, ignoredFrame1Output);
+		frameAnimationExporter.call(frame1offset, view.isIgnoredFrame1Output(), view.sameNameLayerIsIdentical());
 		changeRunning(callFrameAnimationExport, TIMER_SPEED_RUNNING);
 	}
 	private function callFrameAnimationExport()

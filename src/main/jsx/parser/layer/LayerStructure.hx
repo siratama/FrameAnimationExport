@@ -15,7 +15,7 @@ class LayerStructure
 	private var layers:Layers;
 	private var parentDirectoryPath:Array<String>;
 	private var includedInvisibleLayer:Bool;
-	public var layerDataSet(default, null):Array<LayerData>;
+	public var layerPropertySet(default, null):Array<LayerProperty>;
 
 	public function new(layers:Layers, parentDirectoryPath:Array<String>, includedInvisibleLayer:Bool)
 	{
@@ -23,7 +23,7 @@ class LayerStructure
 		this.parentDirectoryPath = parentDirectoryPath;
 		this.includedInvisibleLayer = includedInvisibleLayer;
 
-		layerDataSet = [];
+		layerPropertySet = [];
 	}
 	public function parse()
 	{
@@ -41,50 +41,51 @@ class LayerStructure
 				var childLayerStructure = new LayerStructure(layerSet.layers, directoryPath, includedInvisibleLayer);
 				childLayerStructure.parse();
 
-				layerDataSet = layerDataSet.concat(childLayerStructure.layerDataSet);
+				layerPropertySet = layerPropertySet.concat(childLayerStructure.layerPropertySet);
 			}
 			else
 			{
-				var layerData = new LayerData(layer, parentDirectoryPath);
+				var layerProperty = new LayerProperty(layer, parentDirectoryPath);
 
 				//ignored empty image layer
-				if(!layerData.bounds.isNull())
-					layerDataSet.push(layerData);
+				if(!layerProperty.bounds.isNull())
+					layerPropertySet.push(layerProperty);
 			}
 		}
 	}
 	public function getPhotoshopLayerSet():Array<PhotoshopLayer>
 	{
 		var photoshopLayerSet = [];
-		for (layerData in layerDataSet)
+		for (layerProperty in layerPropertySet)
 		{
 			photoshopLayerSet.push(
-				layerData.toPhotoshopLayer()
+				layerProperty.toPhotoshopLayer()
 			);
 		}
 		return photoshopLayerSet;
 	}
-	public function createImagePathMap():Map<String, LayerData>
+	public function createImagePathMap():Map<String, LayerProperty>
 	{
-		var imagePathMap:Map<String, LayerData> = new Map();
-		for(layerData in layerDataSet)
+		var imagePathMap:Map<String, LayerProperty> = new Map();
+		for(layerProperty in layerPropertySet)
 		{
-			imagePathMap[layerData.path] = layerData;
+			imagePathMap[layerProperty.path] = layerProperty;
 		}
 		return imagePathMap;
 	}
 
-	public function createUsedPathSet(allFrameImagepathMap:Map<String, LayerData>):Array<String>
+	public function createUsedPathSet(allFrameImagepathMap:Map<String, LayerProperty>):Array<String>
 	{
 		var tempPathSet:Array<TempPath> = [
-			for(layerData in layerDataSet){ new TempPath(layerData.path); }
+			for(layerProperty in layerPropertySet){ new TempPath(layerProperty.path); }
 		];
 
 		for (path in allFrameImagepathMap.keys()){
 			for(tempLayerData in tempPathSet){
 				if(tempLayerData.path == path){
 					tempLayerData.visible = true;
-					break;
+
+					if(!OptionalParameter.instance.sameNameLayerIsIdentical) break;
 				}
 			}
 		}
@@ -102,60 +103,60 @@ class LayerStructure
 	{
 		var offsetX:Null<Float> = null;
 		var offsetY:Null<Float> = null;
-		for(layerData in layerDataSet)
+		for(layerProperty in layerPropertySet)
 		{
-			if(offsetX == null || layerData.x < offsetX){
-				offsetX = layerData.x;
+			if(offsetX == null || layerProperty.x < offsetX){
+				offsetX = layerProperty.x;
 			}
-			if(offsetY == null || layerData.y < offsetY){
-				offsetY = layerData.y;
+			if(offsetY == null || layerProperty.y < offsetY){
+				offsetY = layerProperty.y;
 			}
 		}
 		return new Point(offsetX, offsetY);
 	}
 	public function offsetPosition(point:Point)
 	{
-		for(layerData in layerDataSet)
-			layerData.offsetPosition(point);
+		for(layerProperty in layerPropertySet)
+			layerProperty.offsetPosition(point);
 	}
 	public function renameSameNameLayer()
 	{
-		var layerNameMap = new Map<String, LayerData>();
-		for(layerData in layerDataSet)
+		var layerNameMap = new Map<String, LayerProperty>();
+		for(layerProperty in layerPropertySet)
 		{
-			if(layerNameMap[layerData.path] == null){
-				layerNameMap[layerData.path] = layerData;
+			if(layerNameMap[layerProperty.path] == null){
+				layerNameMap[layerProperty.path] = layerProperty;
 				continue;
 			}
 
-			var arr = layerData.path.split(COPY_NAME_CLUMN);
+			var arr = layerProperty.path.split(COPY_NAME_CLUMN);
 			var copyIdString = (arr.length == 1) ?
 				COPY_NAME_DEFAULT_ID : arr[arr.length - 1];
 
 			var copyId = Std.parseInt(copyIdString);
 			if(copyId == null){
-				layerNameMap[layerData.path] = layerData;
+				layerNameMap[layerProperty.path] = layerProperty;
 				continue;
 			}
-			renameSameLayerIncrementRoop(layerNameMap, layerData, copyId);
+			renameSameLayerIncrementRoop(layerNameMap, layerProperty, copyId);
 		}
 	}
-	private function renameSameLayerIncrementRoop(layerNameMap:Map<String, LayerData>, layerData:LayerData, copyId:Int)
+	private function renameSameLayerIncrementRoop(layerNameMap:Map<String, LayerProperty>, layerProperty:LayerProperty, copyId:Int)
 	{
-		var renamedLayerName = layerData.fileName + COPY_NAME_CLUMN + Std.string(copyId);
+		var renamedLayerName = layerProperty.fileName + COPY_NAME_CLUMN + Std.string(copyId);
 		if(layerNameMap[renamedLayerName] == null){
-			layerNameMap[renamedLayerName] = layerData;
-			layerData.renameLayer(renamedLayerName);
+			layerNameMap[renamedLayerName] = layerProperty;
+			layerProperty.renameLayer(renamedLayerName);
 		}
 		else{
-			renameSameLayerIncrementRoop(layerNameMap, layerData, ++copyId);
+			renameSameLayerIncrementRoop(layerNameMap, layerProperty, ++copyId);
 		}
 	}
 	public function renameToOriginalName()
 	{
-		for(layerData in layerDataSet)
+		for(layerProperty in layerPropertySet)
 		{
-			layerData.renameToOriginalName();
+			layerProperty.renameToOriginalName();
 		}
 	}
 }

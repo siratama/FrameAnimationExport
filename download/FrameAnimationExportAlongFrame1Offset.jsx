@@ -1409,16 +1409,16 @@ js.Lib.__name__ = ["js","Lib"];
 js.Lib.alert = function(v) {
 	alert(js.Boot.__string_rec(v,""));
 };
-var FrameAnimationExport = $hxClasses["FrameAnimationExport"] = function(frame1offsetData,ignoredFrame1OutputData) {
+var FrameAnimationExport = $hxClasses["FrameAnimationExport"] = function(frame1offsetData,ignoredFrame1OutputData,sameNameLayerIsIdenticalData) {
 	var ignoredFrame1Output = haxe.Unserializer.run(ignoredFrame1OutputData);
 	var frame1offset = haxe.Unserializer.run(frame1offsetData);
-	if(!frame1offset && ignoredFrame1Output) js.Lib.alert("parameter error");
-	(jsx.OptionalParameter.instance == null?jsx.OptionalParameter.instance = new jsx.OptionalParameter():jsx.OptionalParameter.instance).set(frame1offset,ignoredFrame1Output);
+	var sameNameLayerIsIdentical = haxe.Unserializer.run(sameNameLayerIsIdenticalData);
+	(jsx.OptionalParameter.instance == null?jsx.OptionalParameter.instance = new jsx.OptionalParameter():jsx.OptionalParameter.instance).set(frame1offset,ignoredFrame1Output,sameNameLayerIsIdentical);
 	this.application = psd.Lib.app;
 };
 FrameAnimationExport.__name__ = ["FrameAnimationExport"];
 FrameAnimationExport.main = function() {
-	jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute(true,false);
+	jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute(true,false,false);
 };
 FrameAnimationExport.prototype = {
 	getInitialErrorEvent: function() {
@@ -1475,8 +1475,8 @@ FrameAnimationExport.prototype = {
 		var $it0 = this.layerStructures.imagePathMap.keys();
 		while( $it0.hasNext() ) {
 			var key = $it0.next();
-			var layerData = this.layerStructures.imagePathMap.get(key);
-			var outputImage = new jsx.output.ImageExport(this.application,layerData);
+			var layerProperty = this.layerStructures.imagePathMap.get(key);
+			var outputImage = new jsx.output.ImageExport(this.application,layerProperty);
 			outputImage.execute();
 		}
 		this.activeDocument.selection.deselect();
@@ -1487,10 +1487,11 @@ var jsx = jsx || {};
 if(!jsx._FrameAnimationExport) jsx._FrameAnimationExport = {};
 jsx._FrameAnimationExport.FrameAnimationExportJSXRunner = $hxClasses["jsx._FrameAnimationExport.FrameAnimationExportJSXRunner"] = function() { };
 jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.__name__ = ["jsx","_FrameAnimationExport","FrameAnimationExportJSXRunner"];
-jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute = function(frame1offset,ignoredFrame1Output) {
+jsx._FrameAnimationExport.FrameAnimationExportJSXRunner.execute = function(frame1offset,ignoredFrame1Output,sameNameLayerIsIdentical) {
 	var frame1offsetData = haxe.Serializer.run(frame1offset);
 	var ignoredFrame1OutputData = haxe.Serializer.run(ignoredFrame1Output);
-	var frameAnimationExport = new FrameAnimationExport(frame1offsetData,ignoredFrame1OutputData);
+	var sameNameLayerIsIdenticalData = haxe.Serializer.run(sameNameLayerIsIdentical);
+	var frameAnimationExport = new FrameAnimationExport(frame1offsetData,ignoredFrame1OutputData,sameNameLayerIsIdenticalData);
 	var errorEvent = haxe.Unserializer.run(frameAnimationExport.getInitialErrorEvent());
 	switch(errorEvent[1]) {
 	case 1:
@@ -1509,9 +1510,10 @@ jsx.OptionalParameter.get_instance = function() {
 	if(jsx.OptionalParameter.instance == null) return jsx.OptionalParameter.instance = new jsx.OptionalParameter(); else return jsx.OptionalParameter.instance;
 };
 jsx.OptionalParameter.prototype = {
-	set: function(frame1offset,ignoredFrame1Output) {
+	set: function(frame1offset,ignoredFrame1Output,sameNameLayerIsIdentical) {
 		this.frame1offset = frame1offset;
 		this.ignoredFrame1Output = ignoredFrame1Output;
+		this.sameNameLayerIsIdentical = sameNameLayerIsIdentical;
 	}
 	,__class__: jsx.OptionalParameter
 };
@@ -1657,38 +1659,38 @@ jsx.output.DirectoryCreation.execute = function() {
 	(jsx.output.OutputPath.instance == null?jsx.output.OutputPath.instance = new jsx.output.OutputPath():jsx.output.OutputPath.instance).setData(outputDirectoryPath,assetsDirectoryPath,jsonLayerPath,jsonDirectoryPath);
 	return jsx.output.DirectoryCreationEvent.SUCCESS;
 };
-jsx.output.ImageExport = $hxClasses["jsx.output.ImageExport"] = function(application,layerData) {
+jsx.output.ImageExport = $hxClasses["jsx.output.ImageExport"] = function(application,layerProperty) {
 	this.application = application;
-	this.layerData = layerData;
+	this.layerProperty = layerProperty;
 };
 jsx.output.ImageExport.__name__ = ["jsx","output","ImageExport"];
 jsx.output.ImageExport.prototype = {
 	execute: function() {
-		var defaultVisible = this.layerData.layer.visible;
-		this.layerData.layer.visible = true;
+		var defaultVisible = this.layerProperty.layer.visible;
+		this.layerProperty.layer.visible = true;
 		this.createDirectory();
 		this.prepare();
 		this.executeInNewDocument();
-		this.layerData.layer.visible = defaultVisible;
+		this.layerProperty.layer.visible = defaultVisible;
 	}
 	,createDirectory: function() {
-		var imageDirectoryPath = [(jsx.output.OutputPath.instance == null?jsx.output.OutputPath.instance = new jsx.output.OutputPath():jsx.output.OutputPath.instance).outputAssetsDirectoryPath,this.layerData.getDirectoryPathString()].join("/");
+		var imageDirectoryPath = [(jsx.output.OutputPath.instance == null?jsx.output.OutputPath.instance = new jsx.output.OutputPath():jsx.output.OutputPath.instance).outputAssetsDirectoryPath,this.layerProperty.getDirectoryPathString()].join("/");
 		var folder = new Folder(imageDirectoryPath);
 		if(!folder.exists) folder.create();
 	}
 	,prepare: function() {
 		var document = this.application.activeDocument;
-		document.activeLayer = this.layerData.layer;
-		jsx.util.PrivateAPI.selectShapeBorder(this.layerData.layer);
+		document.activeLayer = this.layerProperty.layer;
+		jsx.util.PrivateAPI.selectShapeBorder(this.layerProperty.layer);
 		document.selection.copy(false);
 	}
 	,executeInNewDocument: function() {
-		var newDocument = this.application.documents.add(Std["int"](this.layerData.bounds.get_width()),Std["int"](this.layerData.bounds.get_height()),72,null,null,DocumentFill.TRANSPARENT);
+		var newDocument = this.application.documents.add(Std["int"](this.layerProperty.bounds.get_width()),Std["int"](this.layerProperty.bounds.get_height()),72,null,null,DocumentFill.TRANSPARENT);
 		newDocument.paste();
 		var exportOptionsSaveForWeb = new ExportOptionsSaveForWeb();
 		exportOptionsSaveForWeb.format = SaveDocumentType.PNG;
 		exportOptionsSaveForWeb.PNG8 = false;
-		var outputPath = [(jsx.output.OutputPath.instance == null?jsx.output.OutputPath.instance = new jsx.output.OutputPath():jsx.output.OutputPath.instance).outputDirectoryPath,"assets",this.layerData.path].join("/");
+		var outputPath = [(jsx.output.OutputPath.instance == null?jsx.output.OutputPath.instance = new jsx.output.OutputPath():jsx.output.OutputPath.instance).outputDirectoryPath,"assets",this.layerProperty.path].join("/");
 		newDocument.exportDocument(new File(outputPath + ".png"),ExportType.SAVEFORWEB,exportOptionsSaveForWeb);
 		newDocument.close(SaveOptions.DONOTSAVECHANGES);
 	}
@@ -1814,7 +1816,7 @@ jsx.parser.directory.DirectoryStructure.prototype = {
 	,__class__: jsx.parser.directory.DirectoryStructure
 };
 if(!jsx.parser.layer) jsx.parser.layer = {};
-jsx.parser.layer.LayerData = $hxClasses["jsx.parser.layer.LayerData"] = function(layer,directoryPath) {
+jsx.parser.layer.LayerProperty = $hxClasses["jsx.parser.layer.LayerProperty"] = function(layer,directoryPath) {
 	this.layer = layer;
 	this.directoryPath = directoryPath;
 	this.bounds = jsx.util.Bounds.convert(layer.bounds);
@@ -1824,8 +1826,8 @@ jsx.parser.layer.LayerData = $hxClasses["jsx.parser.layer.LayerData"] = function
 	this.fileName = new EReg(" ","g").replace(layer.name,"-");
 	this.setPath(this.fileName);
 };
-jsx.parser.layer.LayerData.__name__ = ["jsx","parser","layer","LayerData"];
-jsx.parser.layer.LayerData.prototype = {
+jsx.parser.layer.LayerProperty.__name__ = ["jsx","parser","layer","LayerProperty"];
+jsx.parser.layer.LayerProperty.prototype = {
 	renameLayer: function(renamedName) {
 		this.renamedFileName = renamedName;
 		this.layer.name = renamedName;
@@ -1848,13 +1850,13 @@ jsx.parser.layer.LayerData.prototype = {
 	,getDirectoryPathString: function() {
 		return this.directoryPath.join("/");
 	}
-	,__class__: jsx.parser.layer.LayerData
+	,__class__: jsx.parser.layer.LayerProperty
 };
 jsx.parser.layer.LayerStructure = $hxClasses["jsx.parser.layer.LayerStructure"] = function(layers,parentDirectoryPath,includedInvisibleLayer) {
 	this.layers = layers;
 	this.parentDirectoryPath = parentDirectoryPath;
 	this.includedInvisibleLayer = includedInvisibleLayer;
-	this.layerDataSet = [];
+	this.layerPropertySet = [];
 };
 jsx.parser.layer.LayerStructure.__name__ = ["jsx","parser","layer","LayerStructure"];
 jsx.parser.layer.LayerStructure.prototype = {
@@ -1872,33 +1874,33 @@ jsx.parser.layer.LayerStructure.prototype = {
 				directoryPath.push(layer.name);
 				var childLayerStructure = new jsx.parser.layer.LayerStructure(layerSet.layers,directoryPath,this.includedInvisibleLayer);
 				childLayerStructure.parse();
-				this.layerDataSet = this.layerDataSet.concat(childLayerStructure.layerDataSet);
+				this.layerPropertySet = this.layerPropertySet.concat(childLayerStructure.layerPropertySet);
 			} else {
-				var layerData = new jsx.parser.layer.LayerData(layer,this.parentDirectoryPath);
-				if(!layerData.bounds.isNull()) this.layerDataSet.push(layerData);
+				var layerProperty = new jsx.parser.layer.LayerProperty(layer,this.parentDirectoryPath);
+				if(!layerProperty.bounds.isNull()) this.layerPropertySet.push(layerProperty);
 			}
 		}
 	}
 	,getPhotoshopLayerSet: function() {
 		var photoshopLayerSet = [];
 		var _g = 0;
-		var _g1 = this.layerDataSet;
+		var _g1 = this.layerPropertySet;
 		while(_g < _g1.length) {
-			var layerData = _g1[_g];
+			var layerProperty = _g1[_g];
 			++_g;
-			photoshopLayerSet.push(layerData.toPhotoshopLayer());
+			photoshopLayerSet.push(layerProperty.toPhotoshopLayer());
 		}
 		return photoshopLayerSet;
 	}
 	,createImagePathMap: function() {
 		var imagePathMap = new haxe.ds.StringMap();
 		var _g = 0;
-		var _g1 = this.layerDataSet;
+		var _g1 = this.layerPropertySet;
 		while(_g < _g1.length) {
-			var layerData = _g1[_g];
+			var layerProperty = _g1[_g];
 			++_g;
-			imagePathMap.set(layerData.path,layerData);
-			layerData;
+			imagePathMap.set(layerProperty.path,layerProperty);
+			layerProperty;
 		}
 		return imagePathMap;
 	}
@@ -1906,11 +1908,11 @@ jsx.parser.layer.LayerStructure.prototype = {
 		var tempPathSet;
 		var _g = [];
 		var _g1 = 0;
-		var _g2 = this.layerDataSet;
+		var _g2 = this.layerPropertySet;
 		while(_g1 < _g2.length) {
-			var layerData = _g2[_g1];
+			var layerProperty = _g2[_g1];
 			++_g1;
-			_g.push(new jsx.parser.layer.TempPath(layerData.path));
+			_g.push(new jsx.parser.layer.TempPath(layerProperty.path));
 		}
 		tempPathSet = _g;
 		var $it0 = allFrameImagepathMap.keys();
@@ -1922,7 +1924,7 @@ jsx.parser.layer.LayerStructure.prototype = {
 				++_g11;
 				if(tempLayerData.path == path) {
 					tempLayerData.visible = true;
-					break;
+					if(!(jsx.OptionalParameter.instance == null?jsx.OptionalParameter.instance = new jsx.OptionalParameter():jsx.OptionalParameter.instance).sameNameLayerIsIdentical) break;
 				}
 			}
 		}
@@ -1939,64 +1941,64 @@ jsx.parser.layer.LayerStructure.prototype = {
 		var offsetX = null;
 		var offsetY = null;
 		var _g = 0;
-		var _g1 = this.layerDataSet;
+		var _g1 = this.layerPropertySet;
 		while(_g < _g1.length) {
-			var layerData = _g1[_g];
+			var layerProperty = _g1[_g];
 			++_g;
-			if(offsetX == null || layerData.x < offsetX) offsetX = layerData.x;
-			if(offsetY == null || layerData.y < offsetY) offsetY = layerData.y;
+			if(offsetX == null || layerProperty.x < offsetX) offsetX = layerProperty.x;
+			if(offsetY == null || layerProperty.y < offsetY) offsetY = layerProperty.y;
 		}
 		return new jsx.util.Point(offsetX,offsetY);
 	}
 	,offsetPosition: function(point) {
 		var _g = 0;
-		var _g1 = this.layerDataSet;
+		var _g1 = this.layerPropertySet;
 		while(_g < _g1.length) {
-			var layerData = _g1[_g];
+			var layerProperty = _g1[_g];
 			++_g;
-			layerData.offsetPosition(point);
+			layerProperty.offsetPosition(point);
 		}
 	}
 	,renameSameNameLayer: function() {
 		var layerNameMap = new haxe.ds.StringMap();
 		var _g = 0;
-		var _g1 = this.layerDataSet;
+		var _g1 = this.layerPropertySet;
 		while(_g < _g1.length) {
-			var layerData = _g1[_g];
+			var layerProperty = _g1[_g];
 			++_g;
-			if(layerNameMap.get(layerData.path) == null) {
-				layerNameMap.set(layerData.path,layerData);
-				layerData;
+			if(layerNameMap.get(layerProperty.path) == null) {
+				layerNameMap.set(layerProperty.path,layerProperty);
+				layerProperty;
 				continue;
 			}
-			var arr = layerData.path.split("_");
+			var arr = layerProperty.path.split("_");
 			var copyIdString;
 			if(arr.length == 1) copyIdString = "1"; else copyIdString = arr[arr.length - 1];
 			var copyId = Std.parseInt(copyIdString);
 			if(copyId == null) {
-				layerNameMap.set(layerData.path,layerData);
-				layerData;
+				layerNameMap.set(layerProperty.path,layerProperty);
+				layerProperty;
 				continue;
 			}
-			this.renameSameLayerIncrementRoop(layerNameMap,layerData,copyId);
+			this.renameSameLayerIncrementRoop(layerNameMap,layerProperty,copyId);
 		}
 	}
-	,renameSameLayerIncrementRoop: function(layerNameMap,layerData,copyId) {
+	,renameSameLayerIncrementRoop: function(layerNameMap,layerProperty,copyId) {
 		var renamedLayerName;
-		renamedLayerName = layerData.fileName + "_" + (copyId == null?"null":"" + copyId);
+		renamedLayerName = layerProperty.fileName + "_" + (copyId == null?"null":"" + copyId);
 		if(layerNameMap.get(renamedLayerName) == null) {
-			layerNameMap.set(renamedLayerName,layerData);
-			layerData;
-			layerData.renameLayer(renamedLayerName);
-		} else this.renameSameLayerIncrementRoop(layerNameMap,layerData,++copyId);
+			layerNameMap.set(renamedLayerName,layerProperty);
+			layerProperty;
+			layerProperty.renameLayer(renamedLayerName);
+		} else this.renameSameLayerIncrementRoop(layerNameMap,layerProperty,++copyId);
 	}
 	,renameToOriginalName: function() {
 		var _g = 0;
-		var _g1 = this.layerDataSet;
+		var _g1 = this.layerPropertySet;
 		while(_g < _g1.length) {
-			var layerData = _g1[_g];
+			var layerProperty = _g1[_g];
 			++_g;
-			layerData.renameToOriginalName();
+			layerProperty.renameToOriginalName();
 		}
 	}
 	,__class__: jsx.parser.layer.LayerStructure
@@ -2016,14 +2018,14 @@ jsx.parser.layer.LayerStructures = $hxClasses["jsx.parser.layer.LayerStructures"
 jsx.parser.layer.LayerStructures.__name__ = ["jsx","parser","layer","LayerStructures"];
 jsx.parser.layer.LayerStructures.prototype = {
 	parse: function() {
-		this.renameSameNameLayer();
+		if(!(jsx.OptionalParameter.instance == null?jsx.OptionalParameter.instance = new jsx.OptionalParameter():jsx.OptionalParameter.instance).sameNameLayerIsIdentical) this.renameSameNameLayer();
 		if(jsx.util.PrivateAPI.timelineAnimationFrameExists()) this.parseAllFrames(); else this.parseFrame();
 		this.offsetAlongFrame1();
 		if(this.set.length != 1 && (jsx.OptionalParameter.instance == null?jsx.OptionalParameter.instance = new jsx.OptionalParameter():jsx.OptionalParameter.instance).ignoredFrame1Output) this.set.shift();
 		this.createImagePathMap();
 		this.createPhotoshopLayerSets();
 		this.createUsedPathSet();
-		this.renameToOriginalName();
+		if(!(jsx.OptionalParameter.instance == null?jsx.OptionalParameter.instance = new jsx.OptionalParameter():jsx.OptionalParameter.instance).sameNameLayerIsIdentical) this.renameToOriginalName();
 	}
 	,parseAllFrames: function() {
 		var timelineAnimationFrameIndex = 1;
