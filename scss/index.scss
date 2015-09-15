@@ -54,12 +54,8 @@ button{
     margin-bottom: 10px;
   }
   .frame1_offset{
-    padding: 10px 0 0 20px;
-
-    .option{
-      margin-top: 10px;
-      padding-left: 5px;
-    }
+    padding: 0 0 0 20px;
+    margin-bottom: 10px;
   }
 }
 
@@ -87,5 +83,14 @@ hr{
     background-image: url("../img/cursor.png");
     background-repeat: no-repeat;
     background-position: 0 4px;
+  }
+}
+ul{
+  list-style: none;
+}
+li {
+  margin: 5px;
+  input{
+    vertical-align: middle;
   }
 }

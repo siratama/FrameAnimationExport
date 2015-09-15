@@ -40,10 +40,8 @@ button {
   padding: 10px 0 0 20px;
   margin-bottom: 10px; }
 #container .frame1_offset {
-  padding: 10px 0 0 20px; }
-  #container .frame1_offset .option {
-    margin-top: 10px;
-    padding-left: 5px; }
+  padding: 0 0 0 20px;
+  margin-bottom: 10px; }
 
 hr {
   border: 1px solid #333333; }
@@ -65,5 +63,13 @@ hr {
     background-image: url("../img/cursor.png");
     background-repeat: no-repeat;
     background-position: 0 4px; }
+
+ul {
+  list-style: none; }
+
+li {
+  margin: 5px; }
+  li input {
+    vertical-align: middle; }
 
 /*# sourceMappingURL=index.css.map */
