@@ -80,8 +80,9 @@ class LayerStructures
 			var map = layerStructure.createImagePathMap();
 			for (key in map.keys())
 			{
-				if(!imagePathMap.exists(key))
+				if(!imagePathMap.exists(key)){
 					imagePathMap[key] = map[key];
+				}
 			}
 		}
 	}

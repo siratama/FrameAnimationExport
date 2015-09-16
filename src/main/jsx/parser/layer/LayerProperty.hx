@@ -37,13 +37,18 @@ class LayerProperty
 	public function renameLayer(renamedName:String)
 	{
 		this.renamedFileName = renamedName;
-		layer.name = renamedName;
+		var visible = layer.visible;
+		layer.name = renamedName; //forced visible true?
+		layer.visible = visible;
 		setPath(renamedName);
 	}
 	public function renameToOriginalName()
 	{
-		if(renamedFileName != null)
+		if(renamedFileName != null){
+			var visible = layer.visible;
 			layer.name = fileName;
+			layer.visible = visible;
+		}
 	}
 	private function setPath(fileName:String)
 	{

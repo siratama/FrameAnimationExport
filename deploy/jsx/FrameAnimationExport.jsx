@@ -1829,11 +1829,17 @@ jsx.parser.layer.LayerProperty.__name__ = ["jsx","parser","layer","LayerProperty
 jsx.parser.layer.LayerProperty.prototype = {
 	renameLayer: function(renamedName) {
 		this.renamedFileName = renamedName;
+		var visible = this.layer.visible;
 		this.layer.name = renamedName;
+		this.layer.visible = visible;
 		this.setPath(renamedName);
 	}
 	,renameToOriginalName: function() {
-		if(this.renamedFileName != null) this.layer.name = this.fileName;
+		if(this.renamedFileName != null) {
+			var visible = this.layer.visible;
+			this.layer.name = this.fileName;
+			this.layer.visible = visible;
+		}
 	}
 	,setPath: function(fileName) {
 		if(this.directoryPath.length == 0) this.path = fileName; else this.path = [this.directoryPath.join("/"),fileName].join("/");
@@ -1919,10 +1925,10 @@ jsx.parser.layer.LayerStructure.prototype = {
 			var path = $it0.next();
 			var _g11 = 0;
 			while(_g11 < tempPathSet.length) {
-				var tempLayerData = tempPathSet[_g11];
+				var tempPath = tempPathSet[_g11];
 				++_g11;
-				if(tempLayerData.path == path) {
-					tempLayerData.visible = true;
+				if(tempPath.path == path) {
+					tempPath.visible = true;
 					if(!(jsx.OptionalParameter.instance == null?jsx.OptionalParameter.instance = new jsx.OptionalParameter():jsx.OptionalParameter.instance).sameNameLayerIsIdentical) break;
 				}
 			}
@@ -1930,9 +1936,9 @@ jsx.parser.layer.LayerStructure.prototype = {
 		var usedPathSet = [];
 		var _g12 = 0;
 		while(_g12 < tempPathSet.length) {
-			var tempLayerData1 = tempPathSet[_g12];
+			var tempPath1 = tempPathSet[_g12];
 			++_g12;
-			if(tempLayerData1.visible) usedPathSet.push(tempLayerData1.path);
+			if(tempPath1.visible) usedPathSet.push(tempPath1.path);
 		}
 		return usedPathSet;
 	}

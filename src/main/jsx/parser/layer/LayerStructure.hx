@@ -81,9 +81,9 @@ class LayerStructure
 		];
 
 		for (path in allFrameImagepathMap.keys()){
-			for(tempLayerData in tempPathSet){
-				if(tempLayerData.path == path){
-					tempLayerData.visible = true;
+			for(tempPath in tempPathSet){
+				if(tempPath.path == path){
+					tempPath.visible = true;
 
 					if(!OptionalParameter.instance.sameNameLayerIsIdentical) break;
 				}
@@ -91,9 +91,9 @@ class LayerStructure
 		}
 
 		var usedPathSet:Array<String> = [];
-		for(tempLayerData in tempPathSet){
-			if(tempLayerData.visible){
-				usedPathSet.push(tempLayerData.path);
+		for(tempPath in tempPathSet){
+			if(tempPath.visible){
+				usedPathSet.push(tempPath.path);
 			}
 		}
 		return usedPathSet;
