@@ -26,8 +26,8 @@ Photoshop CC 拡張パネル用ファイルです。
 
 ### jsx file (for Photoshop Any Version)
 
-* [FrameAnimationExport.zxp](https://raw.github.com/siratama/FrameAnimationExport/master/download/FrameAnimationExport.jsx)
-* [FrameAnimationExportAlongFrame1Offset.zxp](https://raw.github.com/siratama/FrameAnimationExport/master/download/FrameAnimationExportAlongFrame1Offset.jsx)
+* [FrameAnimationExport.jsx](https://raw.github.com/siratama/FrameAnimationExport/master/download/FrameAnimationExport.jsx)
+* [FrameAnimationExportAlongFrame1Offset.jsx](https://raw.github.com/siratama/FrameAnimationExport/master/download/FrameAnimationExportAlongFrame1Offset.jsx)
 
 jsx ファイルは以下の機能は持ちあわせていません。
 

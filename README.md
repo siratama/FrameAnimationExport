@@ -26,8 +26,8 @@ This file is a extension panel for Photoshop CC.
 
 ### jsx file (for Photoshop Any Version)
 
-* [FrameAnimationExport.zxp](https://raw.github.com/siratama/FrameAnimationExport/master/download/FrameAnimationExport.jsx)
-* [FrameAnimationExportAlongFrame1Offset.zxp](https://raw.github.com/siratama/FrameAnimationExport/master/download/FrameAnimationExportAlongFrame1Offset.jsx)
+* [FrameAnimationExport.jsx](https://raw.github.com/siratama/FrameAnimationExport/master/download/FrameAnimationExport.jsx)
+* [FrameAnimationExportAlongFrame1Offset.jsx](https://raw.github.com/siratama/FrameAnimationExport/master/download/FrameAnimationExportAlongFrame1Offset.jsx)
 
 There are no following functions for jsx.
 
