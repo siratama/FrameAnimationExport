@@ -10,7 +10,7 @@ FrameAnimationExport は Photoshop CC 用拡張パネルです。
 
 ## 紹介動画
 
-[introduction movie](http://)
+[introduction movie](https://www.youtube.com/watch?v=CbO2_SfJ2CY)
 
 ---
 ## ダウンロード
