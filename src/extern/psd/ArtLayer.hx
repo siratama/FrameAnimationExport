@@ -6,4 +6,5 @@ extern class ArtLayer extends Layer
 	public var isBackgroundLayer:Bool;
 	public var kind:LayerKind;
 	public function merge():ArtLayer;
+	public function rasterize(target:RasterizeType):ArtLayer;
 }

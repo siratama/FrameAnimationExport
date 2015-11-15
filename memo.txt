@@ -1,0 +1,58 @@
+var idrasterizeLayer = stringIDToTypeID( "rasterizeLayer" );
+    var desc17 = new ActionDescriptor();
+    var idnull = charIDToTypeID( "null" );
+        var ref3 = new ActionReference();
+        var idLyr = charIDToTypeID( "Lyr " );
+        var idOrdn = charIDToTypeID( "Ordn" );
+        var idTrgt = charIDToTypeID( "Trgt" );
+        ref3.putEnumerated( idLyr, idOrdn, idTrgt );
+    desc17.putReference( idnull, ref3 );
+    var idWhat = charIDToTypeID( "What" );
+    var idrasterizeItem = stringIDToTypeID( "rasterizeItem" );
+    var idlayerStyle = stringIDToTypeID( "layerStyle" );
+    desc17.putEnumerated( idWhat, idrasterizeItem, idlayerStyle );
+executeAction( idrasterizeLayer, desc17, DialogModes.NO );
+
+---
+undo
+
+var doc = activeDocument;
+doc.activeHistoryState = doc.historyStates[doc.historyStates.length-2];
+
+---
+For the menu item 'undo' use this( the same as crtl-z )
+//undo
+executeAction( charIDToTypeID('undo'), undefined, DialogModes.NO );
+
+For the menu item 'Step Backward' ( the same as alt-ctrl-z ) use this
+function stepHistoryBack(){
+    var desc = new ActionDescriptor();
+        var ref = new ActionReference();
+        ref.putEnumerated( charIDToTypeID( "HstS" ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Prvs" ));
+    desc.putReference(charIDToTypeID( "null" ), ref);
+executeAction( charIDToTypeID( "slct" ), desc, DialogModes.NO );
+};
+
+---
+switch layer visible
+
+var idShw = charIDToTypeID( "Shw " );
+    var desc8 = new ActionDescriptor();
+    var idnull = charIDToTypeID( "null" );
+        var list7 = new ActionList();
+            var ref7 = new ActionReference();
+            var idLyr = charIDToTypeID( "Lyr " );
+            var idOrdn = charIDToTypeID( "Ordn" );
+            var idTrgt = charIDToTypeID( "Trgt" );
+            ref7.putEnumerated( idLyr, idOrdn, idTrgt );
+        list7.putReference( ref7 );
+    desc8.putList( idnull, list7 );
+    var idTglO = charIDToTypeID( "TglO" );
+    desc8.putBoolean( idTglO, true );
+executeAction( idShw, desc8, DialogModes.NO );
+
+---
+merge group(layerset)
+
+var idMrgtwo = charIDToTypeID( "Mrg2" );
+executeAction( idMrgtwo, undefined, DialogModes.NO );

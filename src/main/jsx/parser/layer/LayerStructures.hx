@@ -1,4 +1,6 @@
 package jsx.parser.layer;
+import psd.SaveOptions;
+import jsx.util.Timeline;
 import jsx.OptionalParameter;
 import lib.PhotoshopLayer;
 import psd.Document;
@@ -6,6 +8,7 @@ import jsx.util.PrivateAPI;
 class LayerStructures
 {
 	private var document:Document;
+	private var timelineFrameExists:Bool;
 
 	public var set(default, null):Array<LayerStructure>;
 	public var imagePathMap(default, null):Map<String, LayerProperty>;
@@ -18,16 +21,17 @@ class LayerStructures
 	{
 		this.document = document;
 		set = [];
+		timelineFrameExists = Timeline.frameExists();
 	}
 	public function parse()
 	{
 		if(!OptionalParameter.instance.sameNameLayerIsIdentical)
 			renameSameNameLayer();
 
-		if(PrivateAPI.timelineAnimationFrameExists())
+		if(timelineFrameExists)
 			parseAllFrames();
 		else
-			parseFrame();
+			parseFrame(Timeline.FIRST_FRAME_INDEX);
 
 		offsetAlongFrame1();
 		if(set.length != 1 && OptionalParameter.instance.ignoredFrame1Output){
@@ -43,23 +47,33 @@ class LayerStructures
 	}
 	private function parseAllFrames()
 	{
-		var timelineAnimationFrameIndex = PrivateAPI.TIMELINE_ANIMATION_FRAME_FIRST_INDEX;
+		var timelineAnimationFrameIndex = Timeline.FIRST_FRAME_INDEX;
 		while(true)
 		{
 			try{
-				PrivateAPI.selectTimelineAnimationFrame(timelineAnimationFrameIndex);
-				parseFrame();
+				Timeline.selectFrame(timelineAnimationFrameIndex);
+				parseFrame(timelineAnimationFrameIndex);
+
 			}catch(e:Dynamic){
 				break;
 			}
 			timelineAnimationFrameIndex++;
 		}
 	}
-	private function parseFrame()
+	private function parseFrame(timelineAnimationFrameIndex:Int)
 	{
-		var layerStructure = new LayerStructure(document.layers, [], false);
+		var duplicatesTimelineFirstFrame = timelineFrameExists && timelineAnimationFrameIndex == Timeline.FIRST_FRAME_INDEX;
+		if(duplicatesTimelineFirstFrame){
+			Timeline.duplicateSelectedFrame();
+		}
+
+		var layerStructure = new LayerStructure(document, document.layers, [], false, true);
 		layerStructure.parse();
 		set.push(layerStructure);
+
+		if(duplicatesTimelineFirstFrame){
+			Timeline.deleteSelectedFrame();
+		}
 	}
 	private function offsetAlongFrame1()
 	{
@@ -98,14 +112,14 @@ class LayerStructures
 	}
 	private function createUsedPathSet()
 	{
-		var layerStructure = new LayerStructure(document.layers, [], true);
+		var layerStructure = new LayerStructure(document, document.layers, [], true, false);
 		layerStructure.parse();
 		usedPathSet = layerStructure.createUsedPathSet(imagePathMap);
 	}
 
 	private function renameSameNameLayer()
 	{
-		sameLayerNameCheckedLayerStructure = new LayerStructure(document.layers, [], true);
+		sameLayerNameCheckedLayerStructure = new LayerStructure(document, document.layers, [], true, false);
 		sameLayerNameCheckedLayerStructure.parse();
 		sameLayerNameCheckedLayerStructure.renameSameNameLayer();
 	}

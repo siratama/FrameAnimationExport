@@ -1,5 +1,7 @@
 package jsx;
 
+import jsx.util.LayersDisplay;
+import jsx.util.History;
 import lib.FileDirectory;
 import jsx.parser.layer.LayerStructures;
 import lib.Information;
@@ -136,7 +138,6 @@ class FrameAnimationExport
 			var outputImage = new ImageExport(application, layerProperty);
 			outputImage.execute();
 		}
-		activeDocument.selection.deselect();
 	}
 }
 private class FrameAnimationExportJSXRunner

@@ -12,6 +12,14 @@ package psd_private;
 	var FSEL = "fsel";
 	var T = "T   ";
 	var TRSP = "Trsp";
+	var SHOW = "Shw ";
+	var ORDN = "Ordn";
+	var TARGET = "Trgt";
+	var TGLO = "TglO";
+	var HSTS = "HstS";
+	var PRVS = "Prvs";
+	var WHAT = "What";
+	var DUPLICATE = "Dplc";
+	var DELETE = "Dlt ";
 }
-
 

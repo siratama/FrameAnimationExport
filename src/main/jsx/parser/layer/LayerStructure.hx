@@ -1,32 +1,55 @@
 package jsx.parser.layer;
 
+import psd.Application;
+import psd.SaveOptions;
+import psd.DocumentFill;
+import jsx.util.Timeline;
+import jsx.util.PrivateAPI;
+import jsx.util.DocumentUtil;
+import jsx.util.Bounds;
+import psd.Document;
+import jsx.util.History;
+import jsx.util.LayersDisplay;
 import jsx.util.Point;
 import lib.PhotoshopLayer;
 import psd.LayerSet;
 import psd.Layers;
 import psd.Layer;
 import psd.LayerTypeName;
+using jsx.util.Bounds;
+import psd.Lib.app;
 
 class LayerStructure
 {
 	private static inline var COPY_NAME_CLUMN = "_";
 	private static inline var COPY_NAME_DEFAULT_ID = "1";
 
+	private var application:Application;
+	private var document:Document;
 	private var layers:Layers;
 	private var parentDirectoryPath:Array<String>;
 	private var includedInvisibleLayer:Bool;
+	private var extractedBounds:Bool;
 	public var layerPropertySet(default, null):Array<LayerProperty>;
+	private var layersDisplay:LayersDisplay;
 
-	public function new(layers:Layers, parentDirectoryPath:Array<String>, includedInvisibleLayer:Bool)
+	public function new(document:Document, layers:Layers, parentDirectoryPath:Array<String>, includedInvisibleLayer:Bool, extractedBounds:Bool)
 	{
+		this.document = document;
 		this.layers = layers;
 		this.parentDirectoryPath = parentDirectoryPath;
 		this.includedInvisibleLayer = includedInvisibleLayer;
+		this.extractedBounds = extractedBounds;
 
+		application = app;
 		layerPropertySet = [];
+
+		layersDisplay = new LayersDisplay(document.layers);
 	}
-	public function parse()
+	public function parse(rootFolder:LayerSet = null)
 	{
+		var isRootLayer = (rootFolder == null);
+
 		for (i in 0...layers.length)
 		{
 			var layer:Layer = layers[i];
@@ -38,21 +61,54 @@ class LayerStructure
 
 				var directoryPath = parentDirectoryPath.copy();
 				directoryPath.push(layer.name);
-				var childLayerStructure = new LayerStructure(layerSet.layers, directoryPath, includedInvisibleLayer);
-				childLayerStructure.parse();
+				var childLayerStructure = new LayerStructure(document, layerSet.layers, directoryPath, includedInvisibleLayer, extractedBounds);
 
+				var decidedRootFolder = isRootLayer ? layerSet : rootFolder;
+				childLayerStructure.parse(decidedRootFolder);
 				layerPropertySet = layerPropertySet.concat(childLayerStructure.layerPropertySet);
 			}
 			else
 			{
-				var layerProperty = new LayerProperty(layer, parentDirectoryPath);
+				var bounds:Bounds = extractedBounds ? extractBounds(layer, rootFolder): null;
+				var layerProperty = new LayerProperty(layer, parentDirectoryPath, bounds, rootFolder);
 
 				//ignored empty image layer
-				if(!layerProperty.bounds.isNull())
+				if(!extractedBounds || !layerProperty.bounds.isNull())
 					layerPropertySet.push(layerProperty);
 			}
 		}
 	}
+	private function extractBounds(layer:Layer, rootFolder:LayerSet):Bounds
+	{
+		var bounds:Bounds;
+		var isRootLayer = (rootFolder == null);
+		if(isRootLayer){
+			document.activeLayer = layer;
+			DocumentUtil.rasterizeLayerStyle();
+			bounds = document.activeLayer.bounds.convert();
+		}
+		else{
+			layersDisplay.hide();
+			layer.visible = true;
+
+			document.activeLayer = rootFolder;
+			var tempDocument = application.documents.add(
+				Std.int(document.width), Std.int(document.height),
+				72, null, null, DocumentFill.TRANSPARENT
+			);
+			application.activeDocument = document;
+
+			var duplicatedRootFolder:LayerSet = cast rootFolder.duplicate(tempDocument);
+			application.activeDocument = tempDocument;
+			duplicatedRootFolder.merge();
+			bounds = tempDocument.activeLayer.bounds.convert();
+
+			tempDocument.close(SaveOptions.DONOTSAVECHANGES);
+			layersDisplay.restore();
+		}
+		return bounds;
+	}
+
 	public function getPhotoshopLayerSet():Array<PhotoshopLayer>
 	{
 		var photoshopLayerSet = [];

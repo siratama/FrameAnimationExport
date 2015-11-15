@@ -12,8 +12,14 @@ extern class Document
 	public var selection(default, null):Selection;
 	public var width(default, null):Float;
 	public var height(default, null):Float;
+	public var activeHistoryState:HistoryState;
+	public var historyStates(default, null):HistoryStates;
 	public function add(width:Float, height:Float):Void;
 	public function paste(introSelection:Bool = false):ArtLayer;
 	public function exportDocument(exportIn:File, exportAs:ExportType = null, options:ExportOptions = null):Void;
 	public function close(saving:SaveOptions = null):Void;
+	public function revealAll():Void;
+	public function trim(type:TrimType = null, top:Bool = true, left:Bool = true, bototm:Bool = true, right:Bool = true):Void;
+	public function mergeVisibleLayers():Void;
+	public function duplicate(name:String = null, mergeLayersOnly:Bool = false):Document;
 }
