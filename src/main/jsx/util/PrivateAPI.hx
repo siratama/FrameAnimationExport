@@ -14,7 +14,6 @@ class PrivateAPI
 	 * @index: 1~n
 	 * @throw: out of bounds error
 	 */
-	/*
 	public static function selectTimelineAnimationFrame(index:Int)
 	{
 		var idslct = Lib.charIDToTypeID(CharacterID.SELECT);
@@ -38,7 +37,7 @@ class PrivateAPI
 		}
 		return true;
 	}
-	*/
+
 
 	public static function selectShapeBorder(layer:Layer)
 	{
@@ -70,19 +69,5 @@ class PrivateAPI
 		Lib.executeAction(idsetd, desc, DialogModes.NO);
 
 		layer.name = originalLayerName;
-	}
-
-	public static function selectSingleLayer(layerName:String)
-	{
-		var idslct = Lib.charIDToTypeID(CharacterID.SELECT);
-		var desc = new ActionDescriptor();
-		var idnull = Lib.charIDToTypeID(CharacterID.NULL);
-		var ref = new ActionReference();
-		var idLyr = Lib.charIDToTypeID(CharacterID.LAYER);
-		ref.putName(idLyr, layerName);
-		desc.putReference(idnull, ref);
-		var idMkVs = Lib.charIDToTypeID(CharacterID.MKVS);
-		desc.putBoolean(idMkVs, false);
-		Lib.executeAction(idslct, desc, DialogModes.NO);
 	}
 }

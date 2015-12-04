@@ -1,8 +1,4 @@
 package jsx.output;
-import psd.LayerSet;
-import psd.DocumentFill;
-import jsx.util.LayersDisplay;
-import psd.TrimType;
 import adobe.Folder;
 import jsx.parser.layer.LayerProperty;
 import jsx.util.PrivateAPI;
@@ -12,6 +8,7 @@ import psd.ExportType;
 import adobe.File;
 import psd.SaveDocumentType;
 import psd.ExportOptionsSaveForWeb;
+import psd.DocumentFill;
 import psd.Application;
 import psd.Document;
 import psd.Layer;
@@ -27,15 +24,14 @@ class ImageExport
 	}
 	public function execute()
 	{
-		var layersDisplay = new LayersDisplay(application.activeDocument.layers);
-		layersDisplay.hide();
+		var defaultVisible = layerProperty.layer.visible;
+		layerProperty.layer.visible = true;
 
 		createDirectory();
+		prepare();
+		executeInNewDocument();
 
-		var tempDocument = prepare();
-		export(tempDocument);
-
-		layersDisplay.restore();
+		layerProperty.layer.visible = defaultVisible;
 	}
 	private function createDirectory()
 	{
@@ -48,38 +44,26 @@ class ImageExport
 		if(!folder.exists)
 			folder.create();
 	}
-	private function prepare():Document
+	private function prepare()
 	{
 		var document = application.activeDocument;
-
-		var tempDocument = application.documents.add(
-			Std.int(document.width), Std.int(document.height),
+		document.activeLayer = layerProperty.layer;
+		PrivateAPI.selectShapeBorder(layerProperty.layer);
+		document.selection.copy(false);
+	}
+	private function executeInNewDocument()
+	{
+		var newDocument = application.documents.add(
+			Std.int(layerProperty.bounds.width), Std.int(layerProperty.bounds.height),
 			72, null, null, DocumentFill.TRANSPARENT
 		);
-		application.activeDocument = document;
-
-		layerProperty.layer.visible = true;
-		if(layerProperty.isRootLayer()){
-			layerProperty.layer.duplicate(tempDocument);
-		}
-		else{
-			cast layerProperty.rootFolder.duplicate(tempDocument);
-		}
-		application.activeDocument = tempDocument;
-
-		tempDocument.revealAll();
-		tempDocument.trim(TrimType.TRANSPARENT);
-
-		return tempDocument;
-	}
-	private function export(tempDocument:Document)
-	{
+		newDocument.paste();
 		var exportOptionsSaveForWeb = new ExportOptionsSaveForWeb();
 		exportOptionsSaveForWeb.format = SaveDocumentType.PNG;
 		exportOptionsSaveForWeb.PNG8 = false;
 
 		var outputPath = [OutputPath.instance.outputDirectoryPath, FileDirectory.ASSETS_DIRECTORY, layerProperty.path].join(FileDirectory.PATH_COLUMN);
-		tempDocument.exportDocument(new File(outputPath + FileDirectory.IMAGE_EXTENSION), ExportType.SAVEFORWEB, exportOptionsSaveForWeb);
-		tempDocument.close(SaveOptions.DONOTSAVECHANGES);
+		newDocument.exportDocument(new File(outputPath + FileDirectory.IMAGE_EXTENSION), ExportType.SAVEFORWEB, exportOptionsSaveForWeb);
+		newDocument.close(SaveOptions.DONOTSAVECHANGES);
 	}
 }
