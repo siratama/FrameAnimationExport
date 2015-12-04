@@ -1,14 +1,16 @@
-(function (console) { "use strict";
-var $hxClasses = {},$estr = function() { return js_Boot.__string_rec(this,''); };
-function $extend(from, fields) {
-	function Inherit() {} Inherit.prototype = from; var proto = new Inherit();
-	for (var name in fields) proto[name] = fields[name];
-	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
-	return proto;
-}
+(function () { "use strict";
+var $hxClasses = {};
 var HxOverrides = function() { };
 $hxClasses["HxOverrides"] = HxOverrides;
 HxOverrides.__name__ = ["HxOverrides"];
+HxOverrides.dateStr = function(date) {
+	var m = date.getMonth() + 1;
+	var d = date.getDate();
+	var h = date.getHours();
+	var mi = date.getMinutes();
+	var s = date.getSeconds();
+	return date.getFullYear() + "-" + (m < 10?"0" + m:"" + m) + "-" + (d < 10?"0" + d:"" + d) + " " + (h < 10?"0" + h:"" + h) + ":" + (mi < 10?"0" + mi:"" + mi) + ":" + (s < 10?"0" + s:"" + s);
+};
 HxOverrides.strDate = function(s) {
 	var _g = s.length;
 	switch(_g) {
@@ -29,7 +31,7 @@ HxOverrides.strDate = function(s) {
 		var t = k2[1].split(":");
 		return new Date(y[0],y[1] - 1,y[2],t[0],t[1],t[2]);
 	default:
-		throw new js__$Boot_HaxeError("Invalid date format : " + s);
+		throw "Invalid date format : " + s;
 	}
 };
 HxOverrides.cca = function(s,index) {
@@ -65,8 +67,21 @@ List.prototype = {
 		this.q = x;
 		this.length++;
 	}
+	,iterator: function() {
+		return { h : this.h, hasNext : function() {
+			return this.h != null;
+		}, next : function() {
+			if(this.h == null) return null;
+			var x = this.h[0];
+			this.h = this.h[1];
+			return x;
+		}};
+	}
 	,__class__: List
 };
+var IMap = function() { };
+$hxClasses["IMap"] = IMap;
+IMap.__name__ = ["IMap"];
 Math.__name__ = ["Math"];
 var Reflect = function() { };
 $hxClasses["Reflect"] = Reflect;
@@ -75,12 +90,8 @@ Reflect.field = function(o,field) {
 	try {
 		return o[field];
 	} catch( e ) {
-		if (e instanceof js__$Boot_HaxeError) e = e.val;
 		return null;
 	}
-};
-Reflect.callMethod = function(o,func,args) {
-	return func.apply(o,args);
 };
 Reflect.fields = function(o) {
 	var a = [];
@@ -109,7 +120,7 @@ var Std = function() { };
 $hxClasses["Std"] = Std;
 Std.__name__ = ["Std"];
 Std.string = function(s) {
-	return js_Boot.__string_rec(s,"");
+	return js.Boot.__string_rec(s,"");
 };
 Std.parseFloat = function(x) {
 	return parseFloat(x);
@@ -133,34 +144,26 @@ StringTools.fastCodeAt = function(s,index) {
 };
 var ValueType = $hxClasses["ValueType"] = { __ename__ : ["ValueType"], __constructs__ : ["TNull","TInt","TFloat","TBool","TObject","TFunction","TClass","TEnum","TUnknown"] };
 ValueType.TNull = ["TNull",0];
-ValueType.TNull.toString = $estr;
 ValueType.TNull.__enum__ = ValueType;
 ValueType.TInt = ["TInt",1];
-ValueType.TInt.toString = $estr;
 ValueType.TInt.__enum__ = ValueType;
 ValueType.TFloat = ["TFloat",2];
-ValueType.TFloat.toString = $estr;
 ValueType.TFloat.__enum__ = ValueType;
 ValueType.TBool = ["TBool",3];
-ValueType.TBool.toString = $estr;
 ValueType.TBool.__enum__ = ValueType;
 ValueType.TObject = ["TObject",4];
-ValueType.TObject.toString = $estr;
 ValueType.TObject.__enum__ = ValueType;
 ValueType.TFunction = ["TFunction",5];
-ValueType.TFunction.toString = $estr;
 ValueType.TFunction.__enum__ = ValueType;
-ValueType.TClass = function(c) { var $x = ["TClass",6,c]; $x.__enum__ = ValueType; $x.toString = $estr; return $x; };
-ValueType.TEnum = function(e) { var $x = ["TEnum",7,e]; $x.__enum__ = ValueType; $x.toString = $estr; return $x; };
+ValueType.TClass = function(c) { var $x = ["TClass",6,c]; $x.__enum__ = ValueType; return $x; };
+ValueType.TEnum = function(e) { var $x = ["TEnum",7,e]; $x.__enum__ = ValueType; return $x; };
 ValueType.TUnknown = ["TUnknown",8];
-ValueType.TUnknown.toString = $estr;
 ValueType.TUnknown.__enum__ = ValueType;
 var Type = function() { };
 $hxClasses["Type"] = Type;
 Type.__name__ = ["Type"];
 Type.getClassName = function(c) {
 	var a = c.__name__;
-	if(a == null) return null;
 	return a.join(".");
 };
 Type.getEnumName = function(e) {
@@ -183,12 +186,12 @@ Type.createEmptyInstance = function(cl) {
 };
 Type.createEnum = function(e,constr,params) {
 	var f = Reflect.field(e,constr);
-	if(f == null) throw new js__$Boot_HaxeError("No such constructor " + constr);
+	if(f == null) throw "No such constructor " + constr;
 	if(Reflect.isFunction(f)) {
-		if(params == null) throw new js__$Boot_HaxeError("Constructor " + constr + " need parameters");
-		return Reflect.callMethod(e,f,params);
+		if(params == null) throw "Constructor " + constr + " need parameters";
+		return f.apply(e,params);
 	}
-	if(params != null && params.length != 0) throw new js__$Boot_HaxeError("Constructor " + constr + " does not need parameters");
+	if(params != null && params.length != 0) throw "Constructor " + constr + " does not need parameters";
 	return f;
 };
 Type.getEnumConstructs = function(e) {
@@ -209,7 +212,8 @@ Type["typeof"] = function(v) {
 		if(v == null) return ValueType.TNull;
 		var e = v.__enum__;
 		if(e != null) return ValueType.TEnum(e);
-		var c = js_Boot.getClass(v);
+		var c;
+		if((v instanceof Array) && v.__enum__ == null) c = Array; else c = v.__class__;
 		if(c != null) return ValueType.TClass(c);
 		return ValueType.TObject;
 	case "function":
@@ -221,28 +225,54 @@ Type["typeof"] = function(v) {
 		return ValueType.TUnknown;
 	}
 };
-var common_ClassName = function() { };
-$hxClasses["common.ClassName"] = common_ClassName;
-common_ClassName.__name__ = ["common","ClassName"];
-var common_FrameAnimationExportInitialErrorEvent = $hxClasses["common.FrameAnimationExportInitialErrorEvent"] = { __ename__ : ["common","FrameAnimationExportInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
-common_FrameAnimationExportInitialErrorEvent.NONE = ["NONE",0];
-common_FrameAnimationExportInitialErrorEvent.NONE.toString = $estr;
-common_FrameAnimationExportInitialErrorEvent.NONE.__enum__ = common_FrameAnimationExportInitialErrorEvent;
-common_FrameAnimationExportInitialErrorEvent.ERROR = function(error) { var $x = ["ERROR",1,error]; $x.__enum__ = common_FrameAnimationExportInitialErrorEvent; $x.toString = $estr; return $x; };
-var common_JsxEvent = $hxClasses["common.JsxEvent"] = { __ename__ : ["common","JsxEvent"], __constructs__ : ["NONE","GOTTEN"] };
-common_JsxEvent.NONE = ["NONE",0];
-common_JsxEvent.NONE.toString = $estr;
-common_JsxEvent.NONE.__enum__ = common_JsxEvent;
-common_JsxEvent.GOTTEN = function(serializedEvent) { var $x = ["GOTTEN",1,serializedEvent]; $x.__enum__ = common_JsxEvent; $x.toString = $estr; return $x; };
-var extension_AbstractCSInterface = function(csInterface) {
+var adobe = {};
+adobe.cep = {};
+adobe.cep._CSEventScope = {};
+adobe.cep._CSEventScope.CSEventScope_Impl_ = function() { };
+$hxClasses["adobe.cep._CSEventScope.CSEventScope_Impl_"] = adobe.cep._CSEventScope.CSEventScope_Impl_;
+adobe.cep._CSEventScope.CSEventScope_Impl_.__name__ = ["adobe","cep","_CSEventScope","CSEventScope_Impl_"];
+adobe.cep._CSEventType = {};
+adobe.cep._CSEventType.CSEventType_Impl_ = function() { };
+$hxClasses["adobe.cep._CSEventType.CSEventType_Impl_"] = adobe.cep._CSEventType.CSEventType_Impl_;
+adobe.cep._CSEventType.CSEventType_Impl_.__name__ = ["adobe","cep","_CSEventType","CSEventType_Impl_"];
+adobe.cep._OpenURLInDefaultBrowserCode = {};
+adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_ = function() { };
+$hxClasses["adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_"] = adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_;
+adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_.__name__ = ["adobe","cep","_OpenURLInDefaultBrowserCode","OpenURLInDefaultBrowserCode_Impl_"];
+adobe.cep._ScaleFactor = {};
+adobe.cep._ScaleFactor.ScaleFactor_Impl_ = function() { };
+$hxClasses["adobe.cep._ScaleFactor.ScaleFactor_Impl_"] = adobe.cep._ScaleFactor.ScaleFactor_Impl_;
+adobe.cep._ScaleFactor.ScaleFactor_Impl_.__name__ = ["adobe","cep","_ScaleFactor","ScaleFactor_Impl_"];
+adobe.cep._UIColorType = {};
+adobe.cep._UIColorType.UIColorType_Impl_ = function() { };
+$hxClasses["adobe.cep._UIColorType.UIColorType_Impl_"] = adobe.cep._UIColorType.UIColorType_Impl_;
+adobe.cep._UIColorType.UIColorType_Impl_.__name__ = ["adobe","cep","_UIColorType","UIColorType_Impl_"];
+var common = {};
+common.ClassName = function() { };
+$hxClasses["common.ClassName"] = common.ClassName;
+common.ClassName.__name__ = ["common","ClassName"];
+common.FrameAnimationExportInitialErrorEvent = $hxClasses["common.FrameAnimationExportInitialErrorEvent"] = { __ename__ : ["common","FrameAnimationExportInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.FrameAnimationExportInitialErrorEvent.NONE = ["NONE",0];
+common.FrameAnimationExportInitialErrorEvent.NONE.__enum__ = common.FrameAnimationExportInitialErrorEvent;
+common.FrameAnimationExportInitialErrorEvent.ERROR = function(error) { var $x = ["ERROR",1,error]; $x.__enum__ = common.FrameAnimationExportInitialErrorEvent; return $x; };
+common._FrameAnimationExportInitialErrorEvent = {};
+common._FrameAnimationExportInitialErrorEvent.FrameAnimationExportInitialError_Impl_ = function() { };
+$hxClasses["common._FrameAnimationExportInitialErrorEvent.FrameAnimationExportInitialError_Impl_"] = common._FrameAnimationExportInitialErrorEvent.FrameAnimationExportInitialError_Impl_;
+common._FrameAnimationExportInitialErrorEvent.FrameAnimationExportInitialError_Impl_.__name__ = ["common","_FrameAnimationExportInitialErrorEvent","FrameAnimationExportInitialError_Impl_"];
+common.JsxEvent = $hxClasses["common.JsxEvent"] = { __ename__ : ["common","JsxEvent"], __constructs__ : ["NONE","GOTTEN"] };
+common.JsxEvent.NONE = ["NONE",0];
+common.JsxEvent.NONE.__enum__ = common.JsxEvent;
+common.JsxEvent.GOTTEN = function(serializedEvent) { var $x = ["GOTTEN",1,serializedEvent]; $x.__enum__ = common.JsxEvent; return $x; };
+var extension = {};
+extension.AbstractCSInterface = function(csInterface) {
 	this.csInterface = csInterface;
 };
-$hxClasses["extension.AbstractCSInterface"] = extension_AbstractCSInterface;
-extension_AbstractCSInterface.__name__ = ["extension","AbstractCSInterface"];
-extension_AbstractCSInterface.create = function() {
-	return new extension_AbstractCSInterface(new CSInterface());
+$hxClasses["extension.AbstractCSInterface"] = extension.AbstractCSInterface;
+extension.AbstractCSInterface.__name__ = ["extension","AbstractCSInterface"];
+extension.AbstractCSInterface.create = function() {
+	return new extension.AbstractCSInterface(new CSInterface());
 };
-extension_AbstractCSInterface.prototype = {
+extension.AbstractCSInterface.prototype = {
 	getExtensionUri: function() {
 		return "file:///" + this.csInterface.getSystemPath(SystemPath.EXTENSION);
 	}
@@ -257,32 +287,28 @@ extension_AbstractCSInterface.prototype = {
 	}
 	,showColorPicker: function(pickForeground,callback) {
 		if(pickForeground == null) pickForeground = true;
-		this.csInterface.evalScript("app.showColorPicker(" + (pickForeground == null?"null":"" + pickForeground) + ");",callback);
-		return;
+		return this.csInterface.evalScript("app.showColorPicker(" + (pickForeground == null?"null":"" + pickForeground) + ");",callback);
 	}
 	,callColorPicker: function(callback) {
-		this.csInterface.evalScript("$.colorPicker();",callback);
-		return;
+		return this.csInterface.evalScript("$.colorPicker();",callback);
 	}
-	,__class__: extension_AbstractCSInterface
+	,__class__: extension.AbstractCSInterface
 };
-var extension_FrameAnimationExporterEvent = $hxClasses["extension.FrameAnimationExporterEvent"] = { __ename__ : ["extension","FrameAnimationExporterEvent"], __constructs__ : ["INITIAL_ERROR_EVENT","SUCCESS","NONE"] };
-extension_FrameAnimationExporterEvent.INITIAL_ERROR_EVENT = function(error) { var $x = ["INITIAL_ERROR_EVENT",0,error]; $x.__enum__ = extension_FrameAnimationExporterEvent; $x.toString = $estr; return $x; };
-extension_FrameAnimationExporterEvent.SUCCESS = ["SUCCESS",1];
-extension_FrameAnimationExporterEvent.SUCCESS.toString = $estr;
-extension_FrameAnimationExporterEvent.SUCCESS.__enum__ = extension_FrameAnimationExporterEvent;
-extension_FrameAnimationExporterEvent.NONE = ["NONE",2];
-extension_FrameAnimationExporterEvent.NONE.toString = $estr;
-extension_FrameAnimationExporterEvent.NONE.__enum__ = extension_FrameAnimationExporterEvent;
-var extension_FrameAnimationExporter = function() {
-	this.csInterface = extension_AbstractCSInterface.create();
+extension.FrameAnimationExporterEvent = $hxClasses["extension.FrameAnimationExporterEvent"] = { __ename__ : ["extension","FrameAnimationExporterEvent"], __constructs__ : ["INITIAL_ERROR_EVENT","SUCCESS","NONE"] };
+extension.FrameAnimationExporterEvent.INITIAL_ERROR_EVENT = function(error) { var $x = ["INITIAL_ERROR_EVENT",0,error]; $x.__enum__ = extension.FrameAnimationExporterEvent; return $x; };
+extension.FrameAnimationExporterEvent.SUCCESS = ["SUCCESS",1];
+extension.FrameAnimationExporterEvent.SUCCESS.__enum__ = extension.FrameAnimationExporterEvent;
+extension.FrameAnimationExporterEvent.NONE = ["NONE",2];
+extension.FrameAnimationExporterEvent.NONE.__enum__ = extension.FrameAnimationExporterEvent;
+extension.FrameAnimationExporter = function() {
+	this.csInterface = extension.AbstractCSInterface.create();
 };
-$hxClasses["extension.FrameAnimationExporter"] = extension_FrameAnimationExporter;
-extension_FrameAnimationExporter.__name__ = ["extension","FrameAnimationExporter"];
-extension_FrameAnimationExporter.prototype = {
+$hxClasses["extension.FrameAnimationExporter"] = extension.FrameAnimationExporter;
+extension.FrameAnimationExporter.__name__ = ["extension","FrameAnimationExporter"];
+extension.FrameAnimationExporter.prototype = {
 	getEvent: function() {
 		var n = this.event;
-		this.event = extension_FrameAnimationExporterEvent.NONE;
+		this.event = extension.FrameAnimationExporterEvent.NONE;
 		return n;
 	}
 	,run: function() {
@@ -290,14 +316,14 @@ extension_FrameAnimationExporter.prototype = {
 	}
 	,call: function(frame1offset,ignoredFrame1Output,sameNameLayerIsIdentical) {
 		var _g = this;
-		this.event = extension_FrameAnimationExporterEvent.NONE;
-		this.jsxEvent = common_JsxEvent.NONE;
-		var frame1offsetData = haxe_Serializer.run(frame1offset);
-		var ignoredFrame1OutputData = haxe_Serializer.run(ignoredFrame1Output);
-		var sameNameLayerIsIdenticalData = haxe_Serializer.run(sameNameLayerIsIdentical);
+		this.event = extension.FrameAnimationExporterEvent.NONE;
+		this.jsxEvent = common.JsxEvent.NONE;
+		var frame1offsetData = haxe.Serializer.run(frame1offset);
+		var ignoredFrame1OutputData = haxe.Serializer.run(ignoredFrame1Output);
+		var sameNameLayerIsIdenticalData = haxe.Serializer.run(sameNameLayerIsIdentical);
 		this.csInterface.evalScript("var " + "frameAnimationExport" + " = new " + "FrameAnimationExport" + "(\"" + frame1offsetData + "\", \"" + ignoredFrame1OutputData + "\", \"" + sameNameLayerIsIdenticalData + "\");");
 		this.csInterface.evalScript("" + "frameAnimationExport" + ".getInitialErrorEvent();",function(result) {
-			_g.jsxEvent = common_JsxEvent.GOTTEN(result);
+			_g.jsxEvent = common.JsxEvent.GOTTEN(result);
 		});
 		this.mainFunction = $bind(this,this.observeToRecieveInitialErrorEvent);
 	}
@@ -309,11 +335,11 @@ extension_FrameAnimationExporter.prototype = {
 				return;
 			case 1:
 				var serializedEvent = _g[2];
-				var initialErrorEvent = haxe_Unserializer.run(serializedEvent);
+				var initialErrorEvent = haxe.Unserializer.run(serializedEvent);
 				switch(initialErrorEvent[1]) {
 				case 1:
 					var error = initialErrorEvent[2];
-					this.destroy(extension_FrameAnimationExporterEvent.INITIAL_ERROR_EVENT(error));
+					this.destroy(extension.FrameAnimationExporterEvent.INITIAL_ERROR_EVENT(error));
 					break;
 				case 0:
 					this.execute();
@@ -325,11 +351,11 @@ extension_FrameAnimationExporter.prototype = {
 	}
 	,execute: function() {
 		this.csInterface.evalScript("" + "frameAnimationExport" + ".execute();");
-		this.destroy(extension_FrameAnimationExporterEvent.SUCCESS);
+		this.destroy(extension.FrameAnimationExporterEvent.SUCCESS);
 	}
 	,recieveJsxEvent: function() {
 		var n = this.jsxEvent;
-		this.jsxEvent = common_JsxEvent.NONE;
+		this.jsxEvent = common.JsxEvent.NONE;
 		return n;
 	}
 	,destroy: function(event) {
@@ -338,16 +364,16 @@ extension_FrameAnimationExporter.prototype = {
 	}
 	,finish: function() {
 	}
-	,__class__: extension_FrameAnimationExporter
+	,__class__: extension.FrameAnimationExporter
 };
-var extension_JsxLoader = function() {
-	this.csInterface = extension_AbstractCSInterface.create();
+extension.JsxLoader = function() {
+	this.csInterface = extension.AbstractCSInterface.create();
 	this.loadIndex = 0;
 	this.load();
 };
-$hxClasses["extension.JsxLoader"] = extension_JsxLoader;
-extension_JsxLoader.__name__ = ["extension","JsxLoader"];
-extension_JsxLoader.prototype = {
+$hxClasses["extension.JsxLoader"] = extension.JsxLoader;
+extension.JsxLoader.__name__ = ["extension","JsxLoader"];
+extension.JsxLoader.prototype = {
 	getJsxPath: function(fileName) {
 		return this.csInterface.getExtensionSystemPath() + "/jsx/" + fileName + ".jsx";
 	}
@@ -356,7 +382,7 @@ extension_JsxLoader.prototype = {
 	}
 	,load: function() {
 		var _g = this;
-		var fileName = extension_JsxLoader.LOAD_JSX_SET[this.loadIndex];
+		var fileName = extension.JsxLoader.LOAD_JSX_SET[this.loadIndex];
 		var filePath = this.csInterface.getExtensionSystemPath() + "/jsx/" + fileName + ".jsx";
 		this.loaded = false;
 		this.csInterface.evalFile(filePath,function(result) {
@@ -366,29 +392,29 @@ extension_JsxLoader.prototype = {
 	}
 	,observeToLoad: function() {
 		if(!this.loaded) return;
-		if(++this.loadIndex < extension_JsxLoader.LOAD_JSX_SET.length) this.load(); else this.mainFunction = $bind(this,this.finish);
+		if(++this.loadIndex < extension.JsxLoader.LOAD_JSX_SET.length) this.load(); else this.mainFunction = $bind(this,this.finish);
 	}
 	,finish: function() {
 	}
 	,isFinished: function() {
 		return Reflect.compareMethods(this.mainFunction,$bind(this,this.finish));
 	}
-	,__class__: extension_JsxLoader
+	,__class__: extension.JsxLoader
 };
-var extension_Panel = function() {
+extension.Panel = function() {
 	window.addEventListener("load",$bind(this,this.initialize));
 };
-$hxClasses["extension.Panel"] = extension_Panel;
-extension_Panel.__name__ = ["extension","Panel"];
-extension_Panel.main = function() {
-	new extension_Panel();
+$hxClasses["extension.Panel"] = extension.Panel;
+extension.Panel.__name__ = ["extension","Panel"];
+extension.Panel.main = function() {
+	new extension.Panel();
 };
-extension_Panel.prototype = {
+extension.Panel.prototype = {
 	initialize: function(event) {
-		this.csInterface = extension_AbstractCSInterface.create();
-		this.jsxLoader = new extension_JsxLoader();
-		this.frameAnimationExporter = new extension_FrameAnimationExporter();
-		if(extension_View.instance == null) this.view = extension_View.instance = new extension_View(); else this.view = extension_View.instance;
+		this.csInterface = extension.AbstractCSInterface.create();
+		this.jsxLoader = new extension.JsxLoader();
+		this.frameAnimationExporter = new extension.FrameAnimationExporter();
+		if(extension.View.instance == null) this.view = extension.View.instance = new extension.View(); else this.view = extension.View.instance;
 		this.startRunning($bind(this,this.loadJsx),50);
 	}
 	,startRunning: function(func,speed) {
@@ -400,7 +426,7 @@ extension_Panel.prototype = {
 		this.startRunning(func,speed);
 	}
 	,setTimer: function(speed) {
-		this.timer = new haxe_Timer(speed);
+		this.timer = new haxe.Timer(speed);
 		this.timer.run = $bind(this,this.run);
 	}
 	,run: function() {
@@ -428,7 +454,7 @@ extension_Panel.prototype = {
 			return;
 		case 0:
 			var error = event[2];
-			js_Lib.alert(js_Boot.__cast(error , String));
+			js.Lib.alert(js.Boot.__cast(error , String));
 			this.initializeToClickUI();
 			break;
 		case 1:
@@ -436,19 +462,19 @@ extension_Panel.prototype = {
 			break;
 		}
 	}
-	,__class__: extension_Panel
+	,__class__: extension.Panel
 };
-var extension_View = function() {
-	this.element = $("#container");
-	this.runButton = new extension_parts_Button(this.element,"run_button");
-	this.runFrame1OffsetButton = new extension_parts_Button(this.element,"run_frame1_offset_button");
+extension.View = function() {
+	this.element = new $("#container");
+	this.runButton = new extension.parts.Button(this.element,"run_button");
+	this.runFrame1OffsetButton = new extension.parts.Button(this.element,"run_frame1_offset_button");
 };
-$hxClasses["extension.View"] = extension_View;
-extension_View.__name__ = ["extension","View"];
-extension_View.get_instance = function() {
-	if(extension_View.instance == null) return extension_View.instance = new extension_View(); else return extension_View.instance;
+$hxClasses["extension.View"] = extension.View;
+extension.View.__name__ = ["extension","View"];
+extension.View.get_instance = function() {
+	if(extension.View.instance == null) return extension.View.instance = new extension.View(); else return extension.View.instance;
 };
-extension_View.prototype = {
+extension.View.prototype = {
 	isIgnoredFrame1Output: function() {
 		return this.isChecked("ignored_frame1_output");
 	}
@@ -456,20 +482,21 @@ extension_View.prototype = {
 		return this.isChecked("same_name_layer_is_identical");
 	}
 	,isChecked: function(className) {
-		return $("." + className,this.element)["is"](":checked");
+		return new $("." + className,this.element)["is"](":checked");
 	}
-	,__class__: extension_View
+	,__class__: extension.View
 };
-var extension_parts_Button = function(parentElement,className) {
+extension.parts = {};
+extension.parts.Button = function(parentElement,className) {
 	var _g = this;
-	this.element = $("." + className,parentElement);
+	this.element = new $("." + className,parentElement);
 	this.element.click(function(event) {
 		_g.clicked = true;
 	});
 };
-$hxClasses["extension.parts.Button"] = extension_parts_Button;
-extension_parts_Button.__name__ = ["extension","parts","Button"];
-extension_parts_Button.prototype = {
+$hxClasses["extension.parts.Button"] = extension.parts.Button;
+extension.parts.Button.__name__ = ["extension","parts","Button"];
+extension.parts.Button.prototype = {
 	isClicked: function() {
 		var n = this.clicked;
 		this.clicked = false;
@@ -484,36 +511,25 @@ extension_parts_Button.prototype = {
 	,isDisabled: function() {
 		return this.element.attr("disabled") != null;
 	}
-	,__class__: extension_parts_Button
+	,__class__: extension.parts.Button
 };
-var haxe_IMap = function() { };
-$hxClasses["haxe.IMap"] = haxe_IMap;
-haxe_IMap.__name__ = ["haxe","IMap"];
-var haxe__$Int64__$_$_$Int64 = function(high,low) {
-	this.high = high;
-	this.low = low;
-};
-$hxClasses["haxe._Int64.___Int64"] = haxe__$Int64__$_$_$Int64;
-haxe__$Int64__$_$_$Int64.__name__ = ["haxe","_Int64","___Int64"];
-haxe__$Int64__$_$_$Int64.prototype = {
-	__class__: haxe__$Int64__$_$_$Int64
-};
-var haxe_Serializer = function() {
+var haxe = {};
+haxe.Serializer = function() {
 	this.buf = new StringBuf();
-	this.cache = [];
-	this.useCache = haxe_Serializer.USE_CACHE;
-	this.useEnumIndex = haxe_Serializer.USE_ENUM_INDEX;
-	this.shash = new haxe_ds_StringMap();
+	this.cache = new Array();
+	this.useCache = haxe.Serializer.USE_CACHE;
+	this.useEnumIndex = haxe.Serializer.USE_ENUM_INDEX;
+	this.shash = new haxe.ds.StringMap();
 	this.scount = 0;
 };
-$hxClasses["haxe.Serializer"] = haxe_Serializer;
-haxe_Serializer.__name__ = ["haxe","Serializer"];
-haxe_Serializer.run = function(v) {
-	var s = new haxe_Serializer();
+$hxClasses["haxe.Serializer"] = haxe.Serializer;
+haxe.Serializer.__name__ = ["haxe","Serializer"];
+haxe.Serializer.run = function(v) {
+	var s = new haxe.Serializer();
 	s.serialize(v);
 	return s.toString();
 };
-haxe_Serializer.prototype = {
+haxe.Serializer.prototype = {
 	toString: function() {
 		return this.buf.b;
 	}
@@ -576,7 +592,7 @@ haxe_Serializer.prototype = {
 				break;
 			case 2:
 				var v2 = v;
-				if(isNaN(v2)) this.buf.b += "k"; else if(!isFinite(v2)) if(v2 < 0) this.buf.b += "m"; else this.buf.b += "p"; else {
+				if(Math.isNaN(v2)) this.buf.b += "k"; else if(!Math.isFinite(v2)) if(v2 < 0) this.buf.b += "m"; else this.buf.b += "p"; else {
 					this.buf.b += "d";
 					if(v2 == null) this.buf.b += "null"; else this.buf.b += "" + v2;
 				}
@@ -621,13 +637,9 @@ haxe_Serializer.prototype = {
 				case List:
 					this.buf.b += "l";
 					var v3 = v;
-					var _g1_head = v3.h;
-					var _g1_val = null;
-					while(_g1_head != null) {
-						var i1;
-						_g1_val = _g1_head[0];
-						_g1_head = _g1_head[1];
-						i1 = _g1_val;
+					var $it0 = v3.iterator();
+					while( $it0.hasNext() ) {
+						var i1 = $it0.next();
 						this.serialize(i1);
 					}
 					this.buf.b += "h";
@@ -635,37 +647,37 @@ haxe_Serializer.prototype = {
 				case Date:
 					var d = v;
 					this.buf.b += "v";
-					this.buf.add(d.getTime());
+					this.buf.add(HxOverrides.dateStr(d));
 					break;
-				case haxe_ds_StringMap:
+				case haxe.ds.StringMap:
 					this.buf.b += "b";
 					var v4 = v;
-					var $it0 = v4.keys();
-					while( $it0.hasNext() ) {
-						var k = $it0.next();
+					var $it1 = v4.keys();
+					while( $it1.hasNext() ) {
+						var k = $it1.next();
 						this.serializeString(k);
-						this.serialize(__map_reserved[k] != null?v4.getReserved(k):v4.h[k]);
+						this.serialize(v4.get(k));
 					}
 					this.buf.b += "h";
 					break;
-				case haxe_ds_IntMap:
+				case haxe.ds.IntMap:
 					this.buf.b += "q";
 					var v5 = v;
-					var $it1 = v5.keys();
-					while( $it1.hasNext() ) {
-						var k1 = $it1.next();
+					var $it2 = v5.keys();
+					while( $it2.hasNext() ) {
+						var k1 = $it2.next();
 						this.buf.b += ":";
 						if(k1 == null) this.buf.b += "null"; else this.buf.b += "" + k1;
-						this.serialize(v5.h[k1]);
+						this.serialize(v5.get(k1));
 					}
 					this.buf.b += "h";
 					break;
-				case haxe_ds_ObjectMap:
+				case haxe.ds.ObjectMap:
 					this.buf.b += "M";
 					var v6 = v;
-					var $it2 = v6.keys();
-					while( $it2.hasNext() ) {
-						var k2 = $it2.next();
+					var $it3 = v6.keys();
+					while( $it3.hasNext() ) {
+						var k2 = $it3.next();
 						var id = Reflect.field(k2,"__id__");
 						Reflect.deleteField(k2,"__id__");
 						this.serialize(k2);
@@ -674,12 +686,12 @@ haxe_Serializer.prototype = {
 					}
 					this.buf.b += "h";
 					break;
-				case haxe_io_Bytes:
+				case haxe.io.Bytes:
 					var v7 = v;
 					var i2 = 0;
 					var max = v7.length - 2;
 					var charsBuf = new StringBuf();
-					var b64 = haxe_Serializer.BASE64;
+					var b64 = haxe.Serializer.BASE64;
 					while(i2 < max) {
 						var b1 = v7.get(i2++);
 						var b2 = v7.get(i2++);
@@ -723,18 +735,9 @@ haxe_Serializer.prototype = {
 				}
 				break;
 			case 4:
-				if(js_Boot.__instanceof(v,Class)) {
-					var className = Type.getClassName(v);
-					this.buf.b += "A";
-					this.serializeString(className);
-				} else if(js_Boot.__instanceof(v,Enum)) {
-					this.buf.b += "B";
-					this.serializeString(Type.getEnumName(v));
-				} else {
-					if(this.useCache && this.serializeRef(v)) return;
-					this.buf.b += "o";
-					this.serializeFields(v);
-				}
+				if(this.useCache && this.serializeRef(v)) return;
+				this.buf.b += "o";
+				this.serializeFields(v);
 				break;
 			case 7:
 				var e = _g[2];
@@ -759,24 +762,24 @@ haxe_Serializer.prototype = {
 				if(this.useCache) this.cache.push(v);
 				break;
 			case 5:
-				throw new js__$Boot_HaxeError("Cannot serialize function");
+				throw "Cannot serialize function";
 				break;
 			default:
-				throw new js__$Boot_HaxeError("Cannot serialize " + Std.string(v));
+				throw "Cannot serialize " + Std.string(v);
 			}
 		}
 	}
-	,__class__: haxe_Serializer
+	,__class__: haxe.Serializer
 };
-var haxe_Timer = function(time_ms) {
+haxe.Timer = function(time_ms) {
 	var me = this;
 	this.id = setInterval(function() {
 		me.run();
 	},time_ms);
 };
-$hxClasses["haxe.Timer"] = haxe_Timer;
-haxe_Timer.__name__ = ["haxe","Timer"];
-haxe_Timer.prototype = {
+$hxClasses["haxe.Timer"] = haxe.Timer;
+haxe.Timer.__name__ = ["haxe","Timer"];
+haxe.Timer.prototype = {
 	stop: function() {
 		if(this.id == null) return;
 		clearInterval(this.id);
@@ -784,37 +787,37 @@ haxe_Timer.prototype = {
 	}
 	,run: function() {
 	}
-	,__class__: haxe_Timer
+	,__class__: haxe.Timer
 };
-var haxe_Unserializer = function(buf) {
+haxe.Unserializer = function(buf) {
 	this.buf = buf;
 	this.length = buf.length;
 	this.pos = 0;
-	this.scache = [];
-	this.cache = [];
-	var r = haxe_Unserializer.DEFAULT_RESOLVER;
+	this.scache = new Array();
+	this.cache = new Array();
+	var r = haxe.Unserializer.DEFAULT_RESOLVER;
 	if(r == null) {
 		r = Type;
-		haxe_Unserializer.DEFAULT_RESOLVER = r;
+		haxe.Unserializer.DEFAULT_RESOLVER = r;
 	}
 	this.setResolver(r);
 };
-$hxClasses["haxe.Unserializer"] = haxe_Unserializer;
-haxe_Unserializer.__name__ = ["haxe","Unserializer"];
-haxe_Unserializer.initCodes = function() {
-	var codes = [];
+$hxClasses["haxe.Unserializer"] = haxe.Unserializer;
+haxe.Unserializer.__name__ = ["haxe","Unserializer"];
+haxe.Unserializer.initCodes = function() {
+	var codes = new Array();
 	var _g1 = 0;
-	var _g = haxe_Unserializer.BASE64.length;
+	var _g = haxe.Unserializer.BASE64.length;
 	while(_g1 < _g) {
 		var i = _g1++;
-		codes[haxe_Unserializer.BASE64.charCodeAt(i)] = i;
+		codes[haxe.Unserializer.BASE64.charCodeAt(i)] = i;
 	}
 	return codes;
 };
-haxe_Unserializer.run = function(v) {
-	return new haxe_Unserializer(v).unserialize();
+haxe.Unserializer.run = function(v) {
+	return new haxe.Unserializer(v).unserialize();
 };
-haxe_Unserializer.prototype = {
+haxe.Unserializer.prototype = {
 	setResolver: function(r) {
 		if(r == null) this.resolver = { resolveClass : function(_) {
 			return null;
@@ -845,30 +848,22 @@ haxe_Unserializer.prototype = {
 		if(s) k *= -1;
 		return k;
 	}
-	,readFloat: function() {
-		var p1 = this.pos;
-		while(true) {
-			var c = this.buf.charCodeAt(this.pos);
-			if(c >= 43 && c < 58 || c == 101 || c == 69) this.pos++; else break;
-		}
-		return Std.parseFloat(HxOverrides.substr(this.buf,p1,this.pos - p1));
-	}
 	,unserializeObject: function(o) {
 		while(true) {
-			if(this.pos >= this.length) throw new js__$Boot_HaxeError("Invalid object");
+			if(this.pos >= this.length) throw "Invalid object";
 			if(this.buf.charCodeAt(this.pos) == 103) break;
 			var k = this.unserialize();
-			if(!(typeof(k) == "string")) throw new js__$Boot_HaxeError("Invalid object key");
+			if(!(typeof(k) == "string")) throw "Invalid object key";
 			var v = this.unserialize();
 			o[k] = v;
 		}
 		this.pos++;
 	}
 	,unserializeEnum: function(edecl,tag) {
-		if(this.get(this.pos++) != 58) throw new js__$Boot_HaxeError("Invalid enum format");
+		if(this.get(this.pos++) != 58) throw "Invalid enum format";
 		var nargs = this.readDigits();
 		if(nargs == 0) return Type.createEnum(edecl,tag);
-		var args = [];
+		var args = new Array();
 		while(nargs-- > 0) args.push(this.unserialize());
 		return Type.createEnum(edecl,tag,args);
 	}
@@ -886,32 +881,37 @@ haxe_Unserializer.prototype = {
 		case 105:
 			return this.readDigits();
 		case 100:
-			return this.readFloat();
+			var p1 = this.pos;
+			while(true) {
+				var c = this.buf.charCodeAt(this.pos);
+				if(c >= 43 && c < 58 || c == 101 || c == 69) this.pos++; else break;
+			}
+			return Std.parseFloat(HxOverrides.substr(this.buf,p1,this.pos - p1));
 		case 121:
 			var len = this.readDigits();
-			if(this.get(this.pos++) != 58 || this.length - this.pos < len) throw new js__$Boot_HaxeError("Invalid string length");
+			if(this.get(this.pos++) != 58 || this.length - this.pos < len) throw "Invalid string length";
 			var s = HxOverrides.substr(this.buf,this.pos,len);
 			this.pos += len;
 			s = decodeURIComponent(s.split("+").join(" "));
 			this.scache.push(s);
 			return s;
 		case 107:
-			return NaN;
+			return Math.NaN;
 		case 109:
-			return -Infinity;
+			return Math.NEGATIVE_INFINITY;
 		case 112:
-			return Infinity;
+			return Math.POSITIVE_INFINITY;
 		case 97:
 			var buf = this.buf;
-			var a = [];
+			var a = new Array();
 			this.cache.push(a);
 			while(true) {
-				var c = this.buf.charCodeAt(this.pos);
-				if(c == 104) {
+				var c1 = this.buf.charCodeAt(this.pos);
+				if(c1 == 104) {
 					this.pos++;
 					break;
 				}
-				if(c == 117) {
+				if(c1 == 117) {
 					this.pos++;
 					var n = this.readDigits();
 					a[a.length + n - 1] = null;
@@ -925,19 +925,19 @@ haxe_Unserializer.prototype = {
 			return o;
 		case 114:
 			var n1 = this.readDigits();
-			if(n1 < 0 || n1 >= this.cache.length) throw new js__$Boot_HaxeError("Invalid reference");
+			if(n1 < 0 || n1 >= this.cache.length) throw "Invalid reference";
 			return this.cache[n1];
 		case 82:
 			var n2 = this.readDigits();
-			if(n2 < 0 || n2 >= this.scache.length) throw new js__$Boot_HaxeError("Invalid string reference");
+			if(n2 < 0 || n2 >= this.scache.length) throw "Invalid string reference";
 			return this.scache[n2];
 		case 120:
-			throw new js__$Boot_HaxeError(this.unserialize());
+			throw this.unserialize();
 			break;
 		case 99:
 			var name = this.unserialize();
 			var cl = this.resolver.resolveClass(name);
-			if(cl == null) throw new js__$Boot_HaxeError("Class not found " + name);
+			if(cl == null) throw "Class not found " + name;
 			var o1 = Type.createEmptyInstance(cl);
 			this.cache.push(o1);
 			this.unserializeObject(o1);
@@ -945,18 +945,18 @@ haxe_Unserializer.prototype = {
 		case 119:
 			var name1 = this.unserialize();
 			var edecl = this.resolver.resolveEnum(name1);
-			if(edecl == null) throw new js__$Boot_HaxeError("Enum not found " + name1);
+			if(edecl == null) throw "Enum not found " + name1;
 			var e = this.unserializeEnum(edecl,this.unserialize());
 			this.cache.push(e);
 			return e;
 		case 106:
 			var name2 = this.unserialize();
 			var edecl1 = this.resolver.resolveEnum(name2);
-			if(edecl1 == null) throw new js__$Boot_HaxeError("Enum not found " + name2);
+			if(edecl1 == null) throw "Enum not found " + name2;
 			this.pos++;
 			var index = this.readDigits();
 			var tag = Type.getEnumConstructs(edecl1)[index];
-			if(tag == null) throw new js__$Boot_HaxeError("Unknown enum index " + name2 + "@" + index);
+			if(tag == null) throw "Unknown enum index " + name2 + "@" + index;
 			var e1 = this.unserializeEnum(edecl1,tag);
 			this.cache.push(e1);
 			return e1;
@@ -968,7 +968,7 @@ haxe_Unserializer.prototype = {
 			this.pos++;
 			return l;
 		case 98:
-			var h = new haxe_ds_StringMap();
+			var h = new haxe.ds.StringMap();
 			this.cache.push(h);
 			var buf2 = this.buf;
 			while(this.buf.charCodeAt(this.pos) != 104) {
@@ -978,19 +978,19 @@ haxe_Unserializer.prototype = {
 			this.pos++;
 			return h;
 		case 113:
-			var h1 = new haxe_ds_IntMap();
+			var h1 = new haxe.ds.IntMap();
 			this.cache.push(h1);
 			var buf3 = this.buf;
-			var c1 = this.get(this.pos++);
-			while(c1 == 58) {
+			var c2 = this.get(this.pos++);
+			while(c2 == 58) {
 				var i = this.readDigits();
 				h1.set(i,this.unserialize());
-				c1 = this.get(this.pos++);
+				c2 = this.get(this.pos++);
 			}
-			if(c1 != 104) throw new js__$Boot_HaxeError("Invalid IntMap format");
+			if(c2 != 104) throw "Invalid IntMap format";
 			return h1;
 		case 77:
-			var h2 = new haxe_ds_ObjectMap();
+			var h2 = new haxe.ds.ObjectMap();
 			this.cache.push(h2);
 			var buf4 = this.buf;
 			while(this.buf.charCodeAt(this.pos) != 104) {
@@ -1001,50 +1001,43 @@ haxe_Unserializer.prototype = {
 			return h2;
 		case 118:
 			var d;
-			if(this.buf.charCodeAt(this.pos) >= 48 && this.buf.charCodeAt(this.pos) <= 57 && this.buf.charCodeAt(this.pos + 1) >= 48 && this.buf.charCodeAt(this.pos + 1) <= 57 && this.buf.charCodeAt(this.pos + 2) >= 48 && this.buf.charCodeAt(this.pos + 2) <= 57 && this.buf.charCodeAt(this.pos + 3) >= 48 && this.buf.charCodeAt(this.pos + 3) <= 57 && this.buf.charCodeAt(this.pos + 4) == 45) {
-				var s3 = HxOverrides.substr(this.buf,this.pos,19);
-				d = HxOverrides.strDate(s3);
-				this.pos += 19;
-			} else {
-				var t = this.readFloat();
-				var d1 = new Date();
-				d1.setTime(t);
-				d = d1;
-			}
+			var s3 = HxOverrides.substr(this.buf,this.pos,19);
+			d = HxOverrides.strDate(s3);
 			this.cache.push(d);
+			this.pos += 19;
 			return d;
 		case 115:
 			var len1 = this.readDigits();
 			var buf5 = this.buf;
-			if(this.get(this.pos++) != 58 || this.length - this.pos < len1) throw new js__$Boot_HaxeError("Invalid bytes length");
-			var codes = haxe_Unserializer.CODES;
+			if(this.get(this.pos++) != 58 || this.length - this.pos < len1) throw "Invalid bytes length";
+			var codes = haxe.Unserializer.CODES;
 			if(codes == null) {
-				codes = haxe_Unserializer.initCodes();
-				haxe_Unserializer.CODES = codes;
+				codes = haxe.Unserializer.initCodes();
+				haxe.Unserializer.CODES = codes;
 			}
 			var i1 = this.pos;
 			var rest = len1 & 3;
 			var size;
 			size = (len1 >> 2) * 3 + (rest >= 2?rest - 1:0);
 			var max = i1 + (len1 - rest);
-			var bytes = haxe_io_Bytes.alloc(size);
+			var bytes = haxe.io.Bytes.alloc(size);
 			var bpos = 0;
 			while(i1 < max) {
 				var c11 = codes[StringTools.fastCodeAt(buf5,i1++)];
-				var c2 = codes[StringTools.fastCodeAt(buf5,i1++)];
-				bytes.set(bpos++,c11 << 2 | c2 >> 4);
+				var c21 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				bytes.set(bpos++,c11 << 2 | c21 >> 4);
 				var c3 = codes[StringTools.fastCodeAt(buf5,i1++)];
-				bytes.set(bpos++,c2 << 4 | c3 >> 2);
+				bytes.set(bpos++,c21 << 4 | c3 >> 2);
 				var c4 = codes[StringTools.fastCodeAt(buf5,i1++)];
 				bytes.set(bpos++,c3 << 6 | c4);
 			}
 			if(rest >= 2) {
 				var c12 = codes[StringTools.fastCodeAt(buf5,i1++)];
-				var c21 = codes[StringTools.fastCodeAt(buf5,i1++)];
-				bytes.set(bpos++,c12 << 2 | c21 >> 4);
+				var c22 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				bytes.set(bpos++,c12 << 2 | c22 >> 4);
 				if(rest == 3) {
 					var c31 = codes[StringTools.fastCodeAt(buf5,i1++)];
-					bytes.set(bpos++,c21 << 4 | c31 >> 2);
+					bytes.set(bpos++,c22 << 4 | c31 >> 2);
 				}
 			}
 			this.pos += len1;
@@ -1053,38 +1046,32 @@ haxe_Unserializer.prototype = {
 		case 67:
 			var name3 = this.unserialize();
 			var cl1 = this.resolver.resolveClass(name3);
-			if(cl1 == null) throw new js__$Boot_HaxeError("Class not found " + name3);
+			if(cl1 == null) throw "Class not found " + name3;
 			var o2 = Type.createEmptyInstance(cl1);
 			this.cache.push(o2);
 			o2.hxUnserialize(this);
-			if(this.get(this.pos++) != 103) throw new js__$Boot_HaxeError("Invalid custom data");
+			if(this.get(this.pos++) != 103) throw "Invalid custom data";
 			return o2;
-		case 65:
-			var name4 = this.unserialize();
-			var cl2 = this.resolver.resolveClass(name4);
-			if(cl2 == null) throw new js__$Boot_HaxeError("Class not found " + name4);
-			return cl2;
-		case 66:
-			var name5 = this.unserialize();
-			var e2 = this.resolver.resolveEnum(name5);
-			if(e2 == null) throw new js__$Boot_HaxeError("Enum not found " + name5);
-			return e2;
 		default:
 		}
 		this.pos--;
-		throw new js__$Boot_HaxeError("Invalid char " + this.buf.charAt(this.pos) + " at position " + this.pos);
+		throw "Invalid char " + this.buf.charAt(this.pos) + " at position " + this.pos;
 	}
-	,__class__: haxe_Unserializer
+	,__class__: haxe.Unserializer
 };
-var haxe_ds_IntMap = function() {
+haxe.ds = {};
+haxe.ds.IntMap = function() {
 	this.h = { };
 };
-$hxClasses["haxe.ds.IntMap"] = haxe_ds_IntMap;
-haxe_ds_IntMap.__name__ = ["haxe","ds","IntMap"];
-haxe_ds_IntMap.__interfaces__ = [haxe_IMap];
-haxe_ds_IntMap.prototype = {
+$hxClasses["haxe.ds.IntMap"] = haxe.ds.IntMap;
+haxe.ds.IntMap.__name__ = ["haxe","ds","IntMap"];
+haxe.ds.IntMap.__interfaces__ = [IMap];
+haxe.ds.IntMap.prototype = {
 	set: function(key,value) {
 		this.h[key] = value;
+	}
+	,get: function(key) {
+		return this.h[key];
 	}
 	,keys: function() {
 		var a = [];
@@ -1093,18 +1080,18 @@ haxe_ds_IntMap.prototype = {
 		}
 		return HxOverrides.iter(a);
 	}
-	,__class__: haxe_ds_IntMap
+	,__class__: haxe.ds.IntMap
 };
-var haxe_ds_ObjectMap = function() {
+haxe.ds.ObjectMap = function() {
 	this.h = { };
 	this.h.__keys__ = { };
 };
-$hxClasses["haxe.ds.ObjectMap"] = haxe_ds_ObjectMap;
-haxe_ds_ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
-haxe_ds_ObjectMap.__interfaces__ = [haxe_IMap];
-haxe_ds_ObjectMap.prototype = {
+$hxClasses["haxe.ds.ObjectMap"] = haxe.ds.ObjectMap;
+haxe.ds.ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
+haxe.ds.ObjectMap.__interfaces__ = [IMap];
+haxe.ds.ObjectMap.prototype = {
 	set: function(key,value) {
-		var id = key.__id__ || (key.__id__ = ++haxe_ds_ObjectMap.count);
+		var id = key.__id__ || (key.__id__ = ++haxe.ds.ObjectMap.count);
 		this.h[id] = value;
 		this.h.__keys__[id] = key;
 	}
@@ -1115,149 +1102,72 @@ haxe_ds_ObjectMap.prototype = {
 		}
 		return HxOverrides.iter(a);
 	}
-	,__class__: haxe_ds_ObjectMap
+	,__class__: haxe.ds.ObjectMap
 };
-var haxe_ds_StringMap = function() {
+haxe.ds.StringMap = function() {
 	this.h = { };
 };
-$hxClasses["haxe.ds.StringMap"] = haxe_ds_StringMap;
-haxe_ds_StringMap.__name__ = ["haxe","ds","StringMap"];
-haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
-haxe_ds_StringMap.prototype = {
+$hxClasses["haxe.ds.StringMap"] = haxe.ds.StringMap;
+haxe.ds.StringMap.__name__ = ["haxe","ds","StringMap"];
+haxe.ds.StringMap.__interfaces__ = [IMap];
+haxe.ds.StringMap.prototype = {
 	set: function(key,value) {
-		if(__map_reserved[key] != null) this.setReserved(key,value); else this.h[key] = value;
+		this.h["$" + key] = value;
 	}
 	,get: function(key) {
-		if(__map_reserved[key] != null) return this.getReserved(key);
-		return this.h[key];
-	}
-	,setReserved: function(key,value) {
-		if(this.rh == null) this.rh = { };
-		this.rh["$" + key] = value;
-	}
-	,getReserved: function(key) {
-		if(this.rh == null) return null; else return this.rh["$" + key];
+		return this.h["$" + key];
 	}
 	,keys: function() {
-		var _this = this.arrayKeys();
-		return HxOverrides.iter(_this);
-	}
-	,arrayKeys: function() {
-		var out = [];
+		var a = [];
 		for( var key in this.h ) {
-		if(this.h.hasOwnProperty(key)) out.push(key);
+		if(this.h.hasOwnProperty(key)) a.push(key.substr(1));
 		}
-		if(this.rh != null) {
-			for( var key in this.rh ) {
-			if(key.charCodeAt(0) == 36) out.push(key.substr(1));
-			}
-		}
-		return out;
+		return HxOverrides.iter(a);
 	}
-	,__class__: haxe_ds_StringMap
+	,__class__: haxe.ds.StringMap
 };
-var haxe_io_Bytes = function(data) {
-	this.length = data.byteLength;
-	this.b = new Uint8Array(data);
-	this.b.bufferValue = data;
-	data.hxBytes = this;
-	data.bytes = this.b;
+haxe.io = {};
+haxe.io.Bytes = function(length,b) {
+	this.length = length;
+	this.b = b;
 };
-$hxClasses["haxe.io.Bytes"] = haxe_io_Bytes;
-haxe_io_Bytes.__name__ = ["haxe","io","Bytes"];
-haxe_io_Bytes.alloc = function(length) {
-	return new haxe_io_Bytes(new ArrayBuffer(length));
+$hxClasses["haxe.io.Bytes"] = haxe.io.Bytes;
+haxe.io.Bytes.__name__ = ["haxe","io","Bytes"];
+haxe.io.Bytes.alloc = function(length) {
+	var a = new Array();
+	var _g = 0;
+	while(_g < length) {
+		var i = _g++;
+		a.push(0);
+	}
+	return new haxe.io.Bytes(length,a);
 };
-haxe_io_Bytes.prototype = {
+haxe.io.Bytes.prototype = {
 	get: function(pos) {
 		return this.b[pos];
 	}
 	,set: function(pos,v) {
 		this.b[pos] = v & 255;
 	}
-	,__class__: haxe_io_Bytes
+	,__class__: haxe.io.Bytes
 };
-var haxe_io_Error = $hxClasses["haxe.io.Error"] = { __ename__ : ["haxe","io","Error"], __constructs__ : ["Blocked","Overflow","OutsideBounds","Custom"] };
-haxe_io_Error.Blocked = ["Blocked",0];
-haxe_io_Error.Blocked.toString = $estr;
-haxe_io_Error.Blocked.__enum__ = haxe_io_Error;
-haxe_io_Error.Overflow = ["Overflow",1];
-haxe_io_Error.Overflow.toString = $estr;
-haxe_io_Error.Overflow.__enum__ = haxe_io_Error;
-haxe_io_Error.OutsideBounds = ["OutsideBounds",2];
-haxe_io_Error.OutsideBounds.toString = $estr;
-haxe_io_Error.OutsideBounds.__enum__ = haxe_io_Error;
-haxe_io_Error.Custom = function(e) { var $x = ["Custom",3,e]; $x.__enum__ = haxe_io_Error; $x.toString = $estr; return $x; };
-var haxe_io_FPHelper = function() { };
-$hxClasses["haxe.io.FPHelper"] = haxe_io_FPHelper;
-haxe_io_FPHelper.__name__ = ["haxe","io","FPHelper"];
-haxe_io_FPHelper.i32ToFloat = function(i) {
-	var sign = 1 - (i >>> 31 << 1);
-	var exp = i >>> 23 & 255;
-	var sig = i & 8388607;
-	if(sig == 0 && exp == 0) return 0.0;
-	return sign * (1 + Math.pow(2,-23) * sig) * Math.pow(2,exp - 127);
-};
-haxe_io_FPHelper.floatToI32 = function(f) {
-	if(f == 0) return 0;
-	var af;
-	if(f < 0) af = -f; else af = f;
-	var exp = Math.floor(Math.log(af) / 0.6931471805599453);
-	if(exp < -127) exp = -127; else if(exp > 128) exp = 128;
-	var sig = Math.round((af / Math.pow(2,exp) - 1) * 8388608) & 8388607;
-	return (f < 0?-2147483648:0) | exp + 127 << 23 | sig;
-};
-haxe_io_FPHelper.i64ToDouble = function(low,high) {
-	var sign = 1 - (high >>> 31 << 1);
-	var exp = (high >> 20 & 2047) - 1023;
-	var sig = (high & 1048575) * 4294967296. + (low >>> 31) * 2147483648. + (low & 2147483647);
-	if(sig == 0 && exp == -1023) return 0.0;
-	return sign * (1.0 + Math.pow(2,-52) * sig) * Math.pow(2,exp);
-};
-haxe_io_FPHelper.doubleToI64 = function(v) {
-	var i64 = haxe_io_FPHelper.i64tmp;
-	if(v == 0) {
-		i64.low = 0;
-		i64.high = 0;
-	} else {
-		var av;
-		if(v < 0) av = -v; else av = v;
-		var exp = Math.floor(Math.log(av) / 0.6931471805599453);
-		var sig;
-		var v1 = (av / Math.pow(2,exp) - 1) * 4503599627370496.;
-		sig = Math.round(v1);
-		var sig_l = sig | 0;
-		var sig_h = sig / 4294967296.0 | 0;
-		i64.low = sig_l;
-		i64.high = (v < 0?-2147483648:0) | exp + 1023 << 20 | sig_h;
+haxe.io.Eof = function() { };
+$hxClasses["haxe.io.Eof"] = haxe.io.Eof;
+haxe.io.Eof.__name__ = ["haxe","io","Eof"];
+haxe.io.Eof.prototype = {
+	toString: function() {
+		return "Eof";
 	}
-	return i64;
+	,__class__: haxe.io.Eof
 };
-var js__$Boot_HaxeError = function(val) {
-	Error.call(this);
-	this.val = val;
-	this.message = String(val);
-	if(Error.captureStackTrace) Error.captureStackTrace(this,js__$Boot_HaxeError);
+var js = {};
+js.Boot = function() { };
+$hxClasses["js.Boot"] = js.Boot;
+js.Boot.__name__ = ["js","Boot"];
+js.Boot.getClass = function(o) {
+	if((o instanceof Array) && o.__enum__ == null) return Array; else return o.__class__;
 };
-$hxClasses["js._Boot.HaxeError"] = js__$Boot_HaxeError;
-js__$Boot_HaxeError.__name__ = ["js","_Boot","HaxeError"];
-js__$Boot_HaxeError.__super__ = Error;
-js__$Boot_HaxeError.prototype = $extend(Error.prototype,{
-	__class__: js__$Boot_HaxeError
-});
-var js_Boot = function() { };
-$hxClasses["js.Boot"] = js_Boot;
-js_Boot.__name__ = ["js","Boot"];
-js_Boot.getClass = function(o) {
-	if((o instanceof Array) && o.__enum__ == null) return Array; else {
-		var cl = o.__class__;
-		if(cl != null) return cl;
-		var name = js_Boot.__nativeClassName(o);
-		if(name != null) return js_Boot.__resolveNativeClass(name);
-		return null;
-	}
-};
-js_Boot.__string_rec = function(o,s) {
+js.Boot.__string_rec = function(o,s) {
 	if(o == null) return "null";
 	if(s.length >= 5) return "<...>";
 	var t = typeof(o);
@@ -1267,24 +1177,24 @@ js_Boot.__string_rec = function(o,s) {
 		if(o instanceof Array) {
 			if(o.__enum__) {
 				if(o.length == 2) return o[0];
-				var str2 = o[0] + "(";
+				var str = o[0] + "(";
 				s += "\t";
 				var _g1 = 2;
 				var _g = o.length;
 				while(_g1 < _g) {
-					var i1 = _g1++;
-					if(i1 != 2) str2 += "," + js_Boot.__string_rec(o[i1],s); else str2 += js_Boot.__string_rec(o[i1],s);
+					var i = _g1++;
+					if(i != 2) str += "," + js.Boot.__string_rec(o[i],s); else str += js.Boot.__string_rec(o[i],s);
 				}
-				return str2 + ")";
+				return str + ")";
 			}
 			var l = o.length;
-			var i;
+			var i1;
 			var str1 = "[";
 			s += "\t";
 			var _g2 = 0;
 			while(_g2 < l) {
 				var i2 = _g2++;
-				str1 += (i2 > 0?",":"") + js_Boot.__string_rec(o[i2],s);
+				str1 += (i2 > 0?",":"") + js.Boot.__string_rec(o[i2],s);
 			}
 			str1 += "]";
 			return str1;
@@ -1293,15 +1203,14 @@ js_Boot.__string_rec = function(o,s) {
 		try {
 			tostr = o.toString;
 		} catch( e ) {
-			if (e instanceof js__$Boot_HaxeError) e = e.val;
 			return "???";
 		}
-		if(tostr != null && tostr != Object.toString && typeof(tostr) == "function") {
+		if(tostr != null && tostr != Object.toString) {
 			var s2 = o.toString();
 			if(s2 != "[object Object]") return s2;
 		}
 		var k = null;
-		var str = "{\n";
+		var str2 = "{\n";
 		s += "\t";
 		var hasp = o.hasOwnProperty != null;
 		for( var k in o ) {
@@ -1311,12 +1220,12 @@ js_Boot.__string_rec = function(o,s) {
 		if(k == "prototype" || k == "__class__" || k == "__super__" || k == "__interfaces__" || k == "__properties__") {
 			continue;
 		}
-		if(str.length != 2) str += ", \n";
-		str += s + k + " : " + js_Boot.__string_rec(o[k],s);
+		if(str2.length != 2) str2 += ", \n";
+		str2 += s + k + " : " + js.Boot.__string_rec(o[k],s);
 		}
 		s = s.substring(1);
-		str += "\n" + s + "}";
-		return str;
+		str2 += "\n" + s + "}";
+		return str2;
 	case "function":
 		return "<function>";
 	case "string":
@@ -1325,7 +1234,7 @@ js_Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 };
-js_Boot.__interfLoop = function(cc,cl) {
+js.Boot.__interfLoop = function(cc,cl) {
 	if(cc == null) return false;
 	if(cc == cl) return true;
 	var intf = cc.__interfaces__;
@@ -1335,12 +1244,12 @@ js_Boot.__interfLoop = function(cc,cl) {
 		while(_g1 < _g) {
 			var i = _g1++;
 			var i1 = intf[i];
-			if(i1 == cl || js_Boot.__interfLoop(i1,cl)) return true;
+			if(i1 == cl || js.Boot.__interfLoop(i1,cl)) return true;
 		}
 	}
-	return js_Boot.__interfLoop(cc.__super__,cl);
+	return js.Boot.__interfLoop(cc.__super__,cl);
 };
-js_Boot.__instanceof = function(o,cl) {
+js.Boot.__instanceof = function(o,cl) {
 	if(cl == null) return false;
 	switch(cl) {
 	case Int:
@@ -1359,9 +1268,7 @@ js_Boot.__instanceof = function(o,cl) {
 		if(o != null) {
 			if(typeof(cl) == "function") {
 				if(o instanceof cl) return true;
-				if(js_Boot.__interfLoop(js_Boot.getClass(o),cl)) return true;
-			} else if(typeof(cl) == "object" && js_Boot.__isNativeObj(cl)) {
-				if(o instanceof cl) return true;
+				if(js.Boot.__interfLoop(js.Boot.getClass(o),cl)) return true;
 			}
 		} else return false;
 		if(cl == Class && o.__name__ != null) return true;
@@ -1369,214 +1276,27 @@ js_Boot.__instanceof = function(o,cl) {
 		return o.__enum__ == cl;
 	}
 };
-js_Boot.__cast = function(o,t) {
-	if(js_Boot.__instanceof(o,t)) return o; else throw new js__$Boot_HaxeError("Cannot cast " + Std.string(o) + " to " + Std.string(t));
+js.Boot.__cast = function(o,t) {
+	if(js.Boot.__instanceof(o,t)) return o; else throw "Cannot cast " + Std.string(o) + " to " + Std.string(t);
 };
-js_Boot.__nativeClassName = function(o) {
-	var name = js_Boot.__toStr.call(o).slice(8,-1);
-	if(name == "Object" || name == "Function" || name == "Math" || name == "JSON") return null;
-	return name;
-};
-js_Boot.__isNativeObj = function(o) {
-	return js_Boot.__nativeClassName(o) != null;
-};
-js_Boot.__resolveNativeClass = function(name) {
-	return (Function("return typeof " + name + " != \"undefined\" ? " + name + " : null"))();
-};
-var js_Lib = function() { };
-$hxClasses["js.Lib"] = js_Lib;
-js_Lib.__name__ = ["js","Lib"];
-js_Lib.alert = function(v) {
-	alert(js_Boot.__string_rec(v,""));
-};
-var js_html_compat_ArrayBuffer = function(a) {
-	if((a instanceof Array) && a.__enum__ == null) {
-		this.a = a;
-		this.byteLength = a.length;
-	} else {
-		var len = a;
-		this.a = [];
-		var _g = 0;
-		while(_g < len) {
-			var i = _g++;
-			this.a[i] = 0;
-		}
-		this.byteLength = len;
-	}
-};
-$hxClasses["js.html.compat.ArrayBuffer"] = js_html_compat_ArrayBuffer;
-js_html_compat_ArrayBuffer.__name__ = ["js","html","compat","ArrayBuffer"];
-js_html_compat_ArrayBuffer.sliceImpl = function(begin,end) {
-	var u = new Uint8Array(this,begin,end == null?null:end - begin);
-	var result = new ArrayBuffer(u.byteLength);
-	var resultArray = new Uint8Array(result);
-	resultArray.set(u);
-	return result;
-};
-js_html_compat_ArrayBuffer.prototype = {
-	slice: function(begin,end) {
-		return new js_html_compat_ArrayBuffer(this.a.slice(begin,end));
-	}
-	,__class__: js_html_compat_ArrayBuffer
-};
-var js_html_compat_DataView = function(buffer,byteOffset,byteLength) {
-	this.buf = buffer;
-	if(byteOffset == null) this.offset = 0; else this.offset = byteOffset;
-	if(byteLength == null) this.length = buffer.byteLength - this.offset; else this.length = byteLength;
-	if(this.offset < 0 || this.length < 0 || this.offset + this.length > buffer.byteLength) throw new js__$Boot_HaxeError(haxe_io_Error.OutsideBounds);
-};
-$hxClasses["js.html.compat.DataView"] = js_html_compat_DataView;
-js_html_compat_DataView.__name__ = ["js","html","compat","DataView"];
-js_html_compat_DataView.prototype = {
-	getInt8: function(byteOffset) {
-		var v = this.buf.a[this.offset + byteOffset];
-		if(v >= 128) return v - 256; else return v;
-	}
-	,getUint8: function(byteOffset) {
-		return this.buf.a[this.offset + byteOffset];
-	}
-	,getInt16: function(byteOffset,littleEndian) {
-		var v = this.getUint16(byteOffset,littleEndian);
-		if(v >= 32768) return v - 65536; else return v;
-	}
-	,getUint16: function(byteOffset,littleEndian) {
-		if(littleEndian) return this.buf.a[this.offset + byteOffset] | this.buf.a[this.offset + byteOffset + 1] << 8; else return this.buf.a[this.offset + byteOffset] << 8 | this.buf.a[this.offset + byteOffset + 1];
-	}
-	,getInt32: function(byteOffset,littleEndian) {
-		var p = this.offset + byteOffset;
-		var a = this.buf.a[p++];
-		var b = this.buf.a[p++];
-		var c = this.buf.a[p++];
-		var d = this.buf.a[p++];
-		if(littleEndian) return a | b << 8 | c << 16 | d << 24; else return d | c << 8 | b << 16 | a << 24;
-	}
-	,getUint32: function(byteOffset,littleEndian) {
-		var v = this.getInt32(byteOffset,littleEndian);
-		if(v < 0) return v + 4294967296.; else return v;
-	}
-	,getFloat32: function(byteOffset,littleEndian) {
-		return haxe_io_FPHelper.i32ToFloat(this.getInt32(byteOffset,littleEndian));
-	}
-	,getFloat64: function(byteOffset,littleEndian) {
-		var a = this.getInt32(byteOffset,littleEndian);
-		var b = this.getInt32(byteOffset + 4,littleEndian);
-		return haxe_io_FPHelper.i64ToDouble(littleEndian?a:b,littleEndian?b:a);
-	}
-	,setInt8: function(byteOffset,value) {
-		if(value < 0) this.buf.a[byteOffset + this.offset] = value + 128 & 255; else this.buf.a[byteOffset + this.offset] = value & 255;
-	}
-	,setUint8: function(byteOffset,value) {
-		this.buf.a[byteOffset + this.offset] = value & 255;
-	}
-	,setInt16: function(byteOffset,value,littleEndian) {
-		this.setUint16(byteOffset,value < 0?value + 65536:value,littleEndian);
-	}
-	,setUint16: function(byteOffset,value,littleEndian) {
-		var p = byteOffset + this.offset;
-		if(littleEndian) {
-			this.buf.a[p] = value & 255;
-			this.buf.a[p++] = value >> 8 & 255;
-		} else {
-			this.buf.a[p++] = value >> 8 & 255;
-			this.buf.a[p] = value & 255;
-		}
-	}
-	,setInt32: function(byteOffset,value,littleEndian) {
-		this.setUint32(byteOffset,value,littleEndian);
-	}
-	,setUint32: function(byteOffset,value,littleEndian) {
-		var p = byteOffset + this.offset;
-		if(littleEndian) {
-			this.buf.a[p++] = value & 255;
-			this.buf.a[p++] = value >> 8 & 255;
-			this.buf.a[p++] = value >> 16 & 255;
-			this.buf.a[p++] = value >>> 24;
-		} else {
-			this.buf.a[p++] = value >>> 24;
-			this.buf.a[p++] = value >> 16 & 255;
-			this.buf.a[p++] = value >> 8 & 255;
-			this.buf.a[p++] = value & 255;
-		}
-	}
-	,setFloat32: function(byteOffset,value,littleEndian) {
-		this.setUint32(byteOffset,haxe_io_FPHelper.floatToI32(value),littleEndian);
-	}
-	,setFloat64: function(byteOffset,value,littleEndian) {
-		var i64 = haxe_io_FPHelper.doubleToI64(value);
-		if(littleEndian) {
-			this.setUint32(byteOffset,i64.low);
-			this.setUint32(byteOffset,i64.high);
-		} else {
-			this.setUint32(byteOffset,i64.high);
-			this.setUint32(byteOffset,i64.low);
-		}
-	}
-	,__class__: js_html_compat_DataView
-};
-var js_html_compat_Uint8Array = function() { };
-$hxClasses["js.html.compat.Uint8Array"] = js_html_compat_Uint8Array;
-js_html_compat_Uint8Array.__name__ = ["js","html","compat","Uint8Array"];
-js_html_compat_Uint8Array._new = function(arg1,offset,length) {
-	var arr;
-	if(typeof(arg1) == "number") {
-		arr = [];
-		var _g = 0;
-		while(_g < arg1) {
-			var i = _g++;
-			arr[i] = 0;
-		}
-		arr.byteLength = arr.length;
-		arr.byteOffset = 0;
-		arr.buffer = new js_html_compat_ArrayBuffer(arr);
-	} else if(js_Boot.__instanceof(arg1,js_html_compat_ArrayBuffer)) {
-		var buffer = arg1;
-		if(offset == null) offset = 0;
-		if(length == null) length = buffer.byteLength - offset;
-		if(offset == 0) arr = buffer.a; else arr = buffer.a.slice(offset,offset + length);
-		arr.byteLength = arr.length;
-		arr.byteOffset = offset;
-		arr.buffer = buffer;
-	} else if((arg1 instanceof Array) && arg1.__enum__ == null) {
-		arr = arg1.slice();
-		arr.byteLength = arr.length;
-		arr.byteOffset = 0;
-		arr.buffer = new js_html_compat_ArrayBuffer(arr);
-	} else throw new js__$Boot_HaxeError("TODO " + Std.string(arg1));
-	arr.subarray = js_html_compat_Uint8Array._subarray;
-	arr.set = js_html_compat_Uint8Array._set;
-	return arr;
-};
-js_html_compat_Uint8Array._set = function(arg,offset) {
-	var t = this;
-	if(js_Boot.__instanceof(arg.buffer,js_html_compat_ArrayBuffer)) {
-		var a = arg;
-		if(arg.byteLength + offset > t.byteLength) throw new js__$Boot_HaxeError("set() outside of range");
-		var _g1 = 0;
-		var _g = arg.byteLength;
-		while(_g1 < _g) {
-			var i = _g1++;
-			t[i + offset] = a[i];
-		}
-	} else if((arg instanceof Array) && arg.__enum__ == null) {
-		var a1 = arg;
-		if(a1.length + offset > t.byteLength) throw new js__$Boot_HaxeError("set() outside of range");
-		var _g11 = 0;
-		var _g2 = a1.length;
-		while(_g11 < _g2) {
-			var i1 = _g11++;
-			t[i1 + offset] = a1[i1];
-		}
-	} else throw new js__$Boot_HaxeError("TODO");
-};
-js_html_compat_Uint8Array._subarray = function(start,end) {
-	var t = this;
-	var a = js_html_compat_Uint8Array._new(t.slice(start,end));
-	a.byteOffset = start;
-	return a;
+js.Lib = function() { };
+$hxClasses["js.Lib"] = js.Lib;
+js.Lib.__name__ = ["js","Lib"];
+js.Lib.alert = function(v) {
+	alert(js.Boot.__string_rec(v,""));
 };
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
+Math.NaN = Number.NaN;
+Math.NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY;
+Math.POSITIVE_INFINITY = Number.POSITIVE_INFINITY;
 $hxClasses.Math = Math;
+Math.isFinite = function(i) {
+	return isFinite(i);
+};
+Math.isNaN = function(i1) {
+	return isNaN(i1);
+};
 String.prototype.__class__ = $hxClasses.String = String;
 String.__name__ = ["String"];
 $hxClasses.Array = Array;
@@ -1591,33 +1311,33 @@ var Bool = $hxClasses.Bool = Boolean;
 Bool.__ename__ = ["Bool"];
 var Class = $hxClasses.Class = { __name__ : ["Class"]};
 var Enum = { };
-var __map_reserved = {}
-var ArrayBuffer = (Function("return typeof ArrayBuffer != 'undefined' ? ArrayBuffer : null"))() || js_html_compat_ArrayBuffer;
-if(ArrayBuffer.prototype.slice == null) ArrayBuffer.prototype.slice = js_html_compat_ArrayBuffer.sliceImpl;
-var DataView = (Function("return typeof DataView != 'undefined' ? DataView : null"))() || js_html_compat_DataView;
-var Uint8Array = (Function("return typeof Uint8Array != 'undefined' ? Uint8Array : null"))() || js_html_compat_Uint8Array._new;
-common_ClassName.FRAME_ANIMATION_EXPORT = "FrameAnimationExport";
-extension_FrameAnimationExporter.INSTANCE_NAME = "frameAnimationExport";
-extension_JsxLoader.JSX_DIRECTORY = "/jsx/";
-extension_JsxLoader.JSX_EXTENSION = ".jsx";
-extension_JsxLoader.LOAD_JSX_SET = ["FrameAnimationExport"];
-extension_Panel.TIMER_SPEED_CALM = 250;
-extension_Panel.TIMER_SPEED_RUNNING = 50;
-haxe_Serializer.USE_CACHE = false;
-haxe_Serializer.USE_ENUM_INDEX = false;
-haxe_Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
-haxe_Unserializer.DEFAULT_RESOLVER = Type;
-haxe_Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
-haxe_ds_ObjectMap.count = 0;
-haxe_io_FPHelper.i64tmp = (function($this) {
-	var $r;
-	var x = new haxe__$Int64__$_$_$Int64(0,0);
-	$r = x;
-	return $r;
-}(this));
-js_Boot.__toStr = {}.toString;
-js_html_compat_Uint8Array.BYTES_PER_ELEMENT = 1;
-extension_Panel.main();
-})(typeof console != "undefined" ? console : {log:function(){}});
+adobe.cep._CSEventScope.CSEventScope_Impl_.GLOBAL = "GLOBAL";
+adobe.cep._CSEventScope.CSEventScope_Impl_.APPLICATION = "APPLICATION";
+adobe.cep._CSEventType.CSEventType_Impl_.PERSISTENT = "com.adobe.PhotoshopPersistent";
+adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_.NO_ERROR = 0;
+adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_.ERR_UNKNOWN = 1;
+adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_.ERR_INVALID_PARAMS = 2;
+adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_.ERR_INVALID_URL = 201;
+adobe.cep._ScaleFactor.ScaleFactor_Impl_.FAIL = -1;
+adobe.cep._ScaleFactor.ScaleFactor_Impl_.NORMAL = 1;
+adobe.cep._ScaleFactor.ScaleFactor_Impl_.HiDPI = 2;
+adobe.cep._UIColorType.UIColorType_Impl_.RGB = 1;
+adobe.cep._UIColorType.UIColorType_Impl_.GRADATION = 2;
+common.ClassName.FRAME_ANIMATION_EXPORT = "FrameAnimationExport";
+common._FrameAnimationExportInitialErrorEvent.FrameAnimationExportInitialError_Impl_.UNOPENED_DOCUMENT = "Unopened document.";
+extension.FrameAnimationExporter.INSTANCE_NAME = "frameAnimationExport";
+extension.JsxLoader.JSX_DIRECTORY = "/jsx/";
+extension.JsxLoader.JSX_EXTENSION = ".jsx";
+extension.JsxLoader.LOAD_JSX_SET = ["FrameAnimationExport"];
+extension.Panel.TIMER_SPEED_CALM = 250;
+extension.Panel.TIMER_SPEED_RUNNING = 50;
+haxe.Serializer.USE_CACHE = false;
+haxe.Serializer.USE_ENUM_INDEX = false;
+haxe.Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
+haxe.Unserializer.DEFAULT_RESOLVER = Type;
+haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
+haxe.ds.ObjectMap.count = 0;
+extension.Panel.main();
+})();
 
 //# sourceMappingURL=index.js.map
